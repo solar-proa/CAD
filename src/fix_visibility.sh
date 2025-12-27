@@ -24,11 +24,15 @@ print(f"Opening {filepath}...")
 doc = FreeCAD.openDocument(filepath)
 
 def make_visible(obj_list):
-    """Recursively make all objects visible"""
+    """Recursively make all objects visible, except Origin helpers"""
     for obj in obj_list:
         try:
             if hasattr(obj, 'ViewObject') and obj.ViewObject:
-                obj.ViewObject.Visibility = True
+                # Hide Origin objects (coordinate system helpers)
+                if 'Origin' in obj.Name or obj.TypeId == 'App::Origin':
+                    obj.ViewObject.Visibility = False
+                else:
+                    obj.ViewObject.Visibility = True
         except:
             pass
         # Recurse into groups

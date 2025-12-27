@@ -35,5 +35,7 @@ Or to generate an individual `FCStd` file type
 ```
 make build BOAT=RP2 CONFIG=CloseHaul
 ```
-After loading a generated `FCStd` file, you may need to turn off the
-visibility of the `Origin...` objects in all container objects.
+The generated files are placed in the folder `output`, for example:
+```
+output/RotiProa_RP2_CloseHaul.FCStd
+```
