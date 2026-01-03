@@ -43,9 +43,9 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y xvfb
           
-          # Create wrapper script
+          # Create wrapper script for console mode
           echo '#!/bin/bash' > freecadcmd
-          echo 'xvfb-run -a ./squashfs-root/AppRun "$@"' >> freecadcmd
+          echo 'xvfb-run -a ./squashfs-root/usr/bin/freecad --console "$@"' >> freecadcmd
           chmod +x freecadcmd
           
           # Add to PATH
