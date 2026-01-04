@@ -88,58 +88,63 @@ export: design $(EXPORT_DIR)
 # Add export commands here once you modify the macro
 	@echo "Export complete!"
 
-# Render all generated FCStd files
-# Generate YAML stats files for Jekyll
+# Generate YAML stats for single design (assumes FCSTD exists)
+.PHONY: stats-only
+stats-only: $(DESIGN_DIR)
+	@echo "Generating YAML statistics for $(DESIGN_NAME)..."
+	@mkdir -p $(DOCS_DIR)/_data
+	@if [ ! -f "$(FCSTD)" ]; then \
+		echo "ERROR: $(FCSTD) not found. Run 'make design' first."; \
+		exit 1; \
+	fi
+	@base=$(DESIGN_NAME); \
+	yaml_name=$$(echo "$$base" | tr '[:upper:]' '[:lower:]' | sed 's/solarproa_//'); \
+	if [ "$(UNAME)" = "Darwin" ]; then \
+		PYTHONPATH=/Applications/FreeCAD.app/Contents/Resources/lib:/Applications/FreeCAD.app/Contents/Resources/Mod \
+		DYLD_LIBRARY_PATH=/Applications/FreeCAD.app/Contents/Frameworks:/Applications/FreeCAD.app/Contents/Resources/lib \
+		/Applications/FreeCAD.app/Contents/Resources/bin/python $(SRC_DIR)/stats.py "$(FCSTD)" $(DOCS_DIR)/"_data/$${yaml_name}.yml"; \
+	else \
+		FCSTD_FILE="$(FCSTD)" OUTPUT_YAML=$(DOCS_DIR)/"_data/$${yaml_name}.yml" freecad-python $(SRC_DIR)/stats.py; \
+	fi
+	@echo "Stats complete!"
+
+# Generate YAML stats with auto-build
+.PHONY: stats
+stats: design stats-only
+
+# Generate YAML stats files for all existing designs
 .PHONY: stats-all
 stats-all: $(DESIGN_DIR)
-	@echo "Generating YAML statistics for Jekyll..."
-	@mkdir -p $(DOCS_DIR)/_data
+	@echo "Generating YAML statistics for all existing designs..."
 	@for fcstd in $(DESIGN_DIR)/*.FCStd; do \
 		if [ -f "$$fcstd" ]; then \
 			base=$$(basename "$$fcstd" .FCStd); \
-			yaml_name=$$(echo "$$base" | tr '[:upper:]' '[:lower:]' | sed 's/solarproa_//'); \
-			echo "Generating stats for $$base..."; \
-			if [ "$(UNAME)" = "Darwin" ]; then \
-				PYTHONPATH=/Applications/FreeCAD.app/Contents/Resources/lib:/Applications/FreeCAD.app/Contents/Resources/Mod \
-				DYLD_LIBRARY_PATH=/Applications/FreeCAD.app/Contents/Frameworks:/Applications/FreeCAD.app/Contents/Resources/lib \
-				/Applications/FreeCAD.app/Contents/Resources/bin/python $(SRC_DIR)/stats.py "$$fcstd" $(DOCS_DIR)/"_data/$${yaml_name}.yml" || true; \
-			else \
-				FCSTD_FILE="$$fcstd" OUTPUT_YAML=$(DOCS_DIR)/"_data/$${yaml_name}.yml" freecad-python $(SRC_DIR)/stats.py || true; \
-			fi \
+			parts=($$(echo "$$base" | tr '_' ' ')); \
+			boat=$${parts[1]}; \
+			config=$${parts[2]}; \
+			echo "Processing $$boat $$config..."; \
+			$(MAKE) stats-only BOAT=$$boat CONFIG=$$config || true; \
 		fi \
 	done
-	@echo "Stats YAML generation complete!"
+	@echo "All stats complete!"
 
-# Render images from FCStd files
-.PHONY: render
-render: design $(RENDER_DIR)
+# Render images from single FCStd file (assumes FCSTD exists)
+.PHONY: render-only
+render-only: $(RENDER_DIR)
 	@echo "Rendering images from $(FCSTD)..."
+	@if [ ! -f "$(FCSTD)" ]; then \
+		echo "ERROR: $(FCSTD) not found. Run 'make design' first."; \
+		exit 1; \
+	fi
 	@if [ "$(UNAME)" = "Darwin" ]; then \
 		$(SRC_DIR)/render_mac.sh "$(FCSTD)" "$(RENDER_DIR)" "$(FREECAD_APP)"; \
 	else \
-		$(FREECAD_CMD) $(SRC_DIR)/render.py "$(FCSTD)" "$(RENDER_DIR)"; \
+		FCSTD_FILE="$(FCSTD)" RENDER_DIR="$(RENDER_DIR)" freecad-python $(SRC_DIR)/render.py; \
 	fi
-	@echo "Render complete!"
-
-.PHONY: render-all
-render-all: $(RENDER_DIR)
-	@echo "Rendering images from all FCStd files..."
-	@for fcstd in $(DESIGN_DIR)/*.FCStd; do \
-		if [ -f "$$fcstd" ]; then \
-			echo "Rendering $$fcstd..."; \
-			if [ "$(UNAME)" = "Darwin" ]; then \
-				$(SRC_DIR)/render_mac.sh "$$fcstd" "$(RENDER_DIR)" "$(FREECAD_APP)" || true; \
-			else \
-				FCSTD_FILE="$$fcstd" RENDER_DIR="$(RENDER_DIR)" freecad-python $(SRC_DIR)/render.py || true; \
-			fi \
-		fi \
-	done
-	@echo "All renders complete!"
 	@echo "Cropping images with ImageMagick..."
 	@if command -v convert >/dev/null 2>&1; then \
-		for img in $(RENDER_DIR)/*.png; do \
+		for img in $(RENDER_DIR)/$(DESIGN_NAME)_*.png; do \
 			if [ -f "$$img" ]; then \
-				echo "Cropping $$img..."; \
 				convert "$$img" -fuzz 1% -trim +repage -bordercolor white -border 20 "$$img" || true; \
 			fi \
 		done; \
@@ -147,6 +152,27 @@ render-all: $(RENDER_DIR)
 	else \
 		echo "ImageMagick not found, skipping crop"; \
 	fi
+	@echo "Render complete!"
+
+# Render with auto-build
+.PHONY: render
+render: design render-only
+
+# Render images from all existing FCStd files
+.PHONY: render-all
+render-all: $(RENDER_DIR)
+	@echo "Rendering images from all existing designs..."
+	@for fcstd in $(DESIGN_DIR)/*.FCStd; do \
+		if [ -f "$$fcstd" ]; then \
+			base=$$(basename "$$fcstd" .FCStd); \
+			parts=($$(echo "$$base" | tr '_' ' ')); \
+			boat=$${parts[1]}; \
+			config=$${parts[2]}; \
+			echo "Processing $$boat $$config..."; \
+			$(MAKE) render-only BOAT=$$boat CONFIG=$$config || true; \
+		fi \
+	done
+	@echo "All renders complete!"
 
 # Clean generated files
 .PHONY: clean
