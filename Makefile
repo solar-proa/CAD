@@ -32,7 +32,7 @@ CONFIGS := $(basename $(notdir $(wildcard $(SRC_DIR)/configurations/*.py)))
 BOATS := $(filter-out __pycache__,$(BOATS))
 CONFIGS := $(filter-out __pycache__ default,$(CONFIGS))
 
-# Which boat to build (RP2 or RP3)
+# Which boat to process (RP2 or RP3)
 BOAT ?= RP2
 PARAMS := boats.$(BOAT)
 
@@ -49,22 +49,25 @@ MACRO := $(SRC_DIR)/SolarProa.FCMacro
 FCSTD := $(DESIGN_DIR)/$(DESIGN_NAME).FCStd
 STEP := $(EXPORT_DIR)/$(DESIGN_NAME).step
 
-# Default target - build all boats with all configurations
 .PHONY: all
-all:
-	@echo "Building all boats with all configurations..."
+all:	design-all render-all stats-all
+
+# Default target - design all boats with all configurations
+.PHONY: design-all
+design-all:
+	@echo "Designing all boats with all configurations..."
 	@echo "Boats: $(BOATS)"
 	@echo "Configs: $(CONFIGS)"
-	@$(foreach boat,$(BOATS),$(foreach config,$(CONFIGS),$(MAKE) build BOAT=$(boat) CONFIG=$(config);))
-	@echo "All builds complete!"
+	@$(foreach boat,$(BOATS),$(foreach config,$(CONFIGS),$(MAKE) design BOAT=$(boat) CONFIG=$(config);))
+	@echo "All designs complete!"
 
 # Create output directories
 $(DESIGN_DIR) $(RENDER_DIR) $(EXPORT_DIR):
 	mkdir -p $@
 
-.PHONY: build
-build: $(DESIGN_DIR)
-	@echo "Building $(BOAT) with $(CONFIG) configuration..."
+.PHONY: design
+design: $(DESIGN_DIR)
+	@echo "Designing $(BOAT) with $(CONFIG) configuration..."
 	@$(FREECAD_CMD) $(MACRO) $(PARAMS) $(CONFIG_PARAM) || true
 	@if [ -f "$(FCSTD)" ]; then \
 		echo "FCStd file created: $(FCSTD)"; \
@@ -72,34 +75,23 @@ build: $(DESIGN_DIR)
 			echo "Running fix_visibility.sh on macOS..."; \
 			$(SRC_DIR)/fix_visibility.sh "$(FCSTD)" "$(FREECAD_APP)"; \
 		fi; \
-		echo "Build complete!"; \
+		echo "Design complete!"; \
 	else \
-		echo "ERROR: Build failed - no design file created"; \
+		echo "ERROR: Design failed - no design file created"; \
 		exit 1; \
 	fi
 
 # Export to various formats (requires adding export commands to macro)
 .PHONY: export
-export: build $(EXPORT_DIR)
+export: design $(EXPORT_DIR)
 	@echo "Exporting model..."
 # Add export commands here once you modify the macro
 	@echo "Export complete!"
 
-# Render images from FCStd files
-.PHONY: render
-render: build $(RENDER_DIR)
-	@echo "Rendering images from $(FCSTD)..."
-	@if [ "$(UNAME)" = "Darwin" ]; then \
-		$(SRC_DIR)/export_renders_mac.sh "$(FCSTD)" "$(RENDER_DIR)" "$(FREECAD_APP)"; \
-	else \
-		$(FREECAD_CMD) $(SRC_DIR)/export_renders.py "$(FCSTD)" "$(RENDER_DIR)"; \
-	fi
-	@echo "Render complete!"
-
 # Render all generated FCStd files
 # Generate YAML stats files for Jekyll
-.PHONY: stats
-stats: $(DESIGN_DIR)
+.PHONY: stats-all
+stats-all: $(DESIGN_DIR)
 	@echo "Generating YAML statistics for Jekyll..."
 	@mkdir -p $(DOCS_DIR)/_data
 	@for fcstd in $(DESIGN_DIR)/*.FCStd; do \
@@ -110,13 +102,24 @@ stats: $(DESIGN_DIR)
 			if [ "$(UNAME)" = "Darwin" ]; then \
 				PYTHONPATH=/Applications/FreeCAD.app/Contents/Resources/lib:/Applications/FreeCAD.app/Contents/Resources/Mod \
 				DYLD_LIBRARY_PATH=/Applications/FreeCAD.app/Contents/Frameworks:/Applications/FreeCAD.app/Contents/Resources/lib \
-				/Applications/FreeCAD.app/Contents/Resources/bin/python $(SRC_DIR)/generate_stats_yaml.py "$$fcstd" $(DOCS_DIR)/"_data/$${yaml_name}.yml" || true; \
+				/Applications/FreeCAD.app/Contents/Resources/bin/python $(SRC_DIR)/stats.py "$$fcstd" $(DOCS_DIR)/"_data/$${yaml_name}.yml" || true; \
 			else \
-				FCSTD_FILE="$$fcstd" OUTPUT_YAML=$(DOCS_DIR)/"_data/$${yaml_name}.yml" freecad-python $(SRC_DIR)/generate_stats_yaml.py || true; \
+				FCSTD_FILE="$$fcstd" OUTPUT_YAML=$(DOCS_DIR)/"_data/$${yaml_name}.yml" freecad-python $(SRC_DIR)/stats.py || true; \
 			fi \
 		fi \
 	done
 	@echo "Stats YAML generation complete!"
+
+# Render images from FCStd files
+.PHONY: render
+render: design $(RENDER_DIR)
+	@echo "Rendering images from $(FCSTD)..."
+	@if [ "$(UNAME)" = "Darwin" ]; then \
+		$(SRC_DIR)/render_mac.sh "$(FCSTD)" "$(RENDER_DIR)" "$(FREECAD_APP)"; \
+	else \
+		$(FREECAD_CMD) $(SRC_DIR)/render.py "$(FCSTD)" "$(RENDER_DIR)"; \
+	fi
+	@echo "Render complete!"
 
 .PHONY: render-all
 render-all: $(RENDER_DIR)
@@ -125,9 +128,9 @@ render-all: $(RENDER_DIR)
 		if [ -f "$$fcstd" ]; then \
 			echo "Rendering $$fcstd..."; \
 			if [ "$(UNAME)" = "Darwin" ]; then \
-				$(SRC_DIR)/export_renders_mac.sh "$$fcstd" "$(RENDER_DIR)" "$(FREECAD_APP)" || true; \
+				$(SRC_DIR)/render_mac.sh "$$fcstd" "$(RENDER_DIR)" "$(FREECAD_APP)" || true; \
 			else \
-				FCSTD_FILE="$$fcstd" OUTPUT_RENDER="$(RENDER_DIR)" freecad-python $(SRC_DIR)/export_renders.py || true; \
+				FCSTD_FILE="$$fcstd" RENDER_DIR="$(RENDER_DIR)" freecad-python $(SRC_DIR)/render.py || true; \
 			fi \
 		fi \
 	done
@@ -167,36 +170,15 @@ clean:
 	@echo "Clean complete!"
 
 # Build specific boats with all configurations
-.PHONY: rp2 rp3
+.PHONY: rp1 rp2 rp3
+rp1:
+	@$(foreach config,$(CONFIGS),$(MAKE) design BOAT=RP1 CONFIG=$(config);)
+
 rp2:
-	@$(foreach config,$(CONFIGS),$(MAKE) build BOAT=RP2 CONFIG=$(config);)
+	@$(foreach config,$(CONFIGS),$(MAKE) design BOAT=RP2 CONFIG=$(config);)
 
 rp3:
-	@$(foreach config,$(CONFIGS),$(MAKE) build BOAT=RP3 CONFIG=$(config);)
-
-# Build all boats (all configurations)
-.PHONY: both boats
-both boats: all
-
-# Build specific configuration with all boats
-.PHONY: closehaul beamreach broadreach goosewing
-closehaul:
-	@$(foreach boat,$(BOATS),$(MAKE) build BOAT=$(boat) CONFIG=CloseHaul;)
-
-beamreach:
-	@$(foreach boat,$(BOATS),$(MAKE) build BOAT=$(boat) CONFIG=BeamReach;)
-
-broadreach:
-	@$(foreach boat,$(BOATS),$(MAKE) build BOAT=$(boat) CONFIG=BroadReach;)
-
-goosewing:
-	@$(foreach boat,$(BOATS),$(MAKE) build BOAT=$(boat) CONFIG=GooseWing;)
-
-# Show statistics
-.PHONY: stats
-stats: build
-	@echo "Model statistics:"
-	@python3 $(SRC_DIR)/stats.py 2>/dev/null || echo "Run build first"
+	@$(foreach config,$(CONFIGS),$(MAKE) design BOAT=RP3 CONFIG=$(config);)
 
 # Help
 .PHONY: help
@@ -226,12 +208,11 @@ help:
 	@echo ""
 	@echo "Utility targets:"
 	@echo "  make clean       - Remove all generated files"
-	@echo "  make stats       - Show model statistics"
 	@echo "  make check       - Check FreeCAD installation"
 	@echo "  make help        - Show this help message"
 	@echo ""
 	@echo "Examples:"
-	@echo "  make build BOAT=RP2 CONFIG=BeamReach"
+	@echo "  make design BOAT=RP2 CONFIG=BeamReach"
 	@echo "  make rp2"
 	@echo "  make closehaul"
 	@echo ""
@@ -250,11 +231,11 @@ localhost:
 	@echo "Serving website in localhost..."
 	cd docs; bundle exec jekyll serve
 
-# Make zip file with just the git files
+# Make zip file with just the newest versions of the git files
 .PHONY: zip
-zip: 
-	@echo "Make zip file with just the git files"
-	git archive -o ../CAD-clean.zip HEAD
-
+zip:
+	@echo "Make zip file with current working directory"
+	@rm -f ../CAD-clean.zip
+	git ls-files | zip -@ ../CAD-clean.zip
 
 

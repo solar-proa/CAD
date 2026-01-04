@@ -1,119 +1,183 @@
-import FreeCAD
-from parameters import *
+#!/usr/bin/env python3
+"""
+Generate YAML statistics files for Jekyll from FreeCAD models
+Uses the existing stats.py module
 
-from material import *
+Usage: 
+  python generate_stats_yaml.py <fcstd_file> <output_yaml>
+"""
 
-def calculate_weight(doc):
-    """Calculate weight based on material names in object labels"""
+import sys
+import os
+
+# Add src to path
+sys.path.insert(0, os.path.dirname(__file__))
+
+try:
+    import FreeCAD as App
+    from material import material
+    from parameters import *
+except ImportError as e:
+    print(f"ERROR: {e}")
+    print("This script must be run with FreeCAD's Python")
+    sys.exit(1)
+
+def boat_name_from_file(filename):
+    """Extract boat name: SolarProa_RP2_Config.FCStd -> RP2"""
+    base = os.path.basename(filename).replace('.FCStd', '')
+    parts = base.split('_')
+    return parts[1] if len(parts) >= 2 else 'Unknown'
+
+def config_from_file(filename):
+    """Extract configuration: SolarProa_RP2_CloseHaul.FCStd -> CloseHaul"""
+    base = os.path.basename(filename).replace('.FCStd', '')
+    parts = base.split('_')
+    return parts[2] if len(parts) >= 3 else 'Default'
+
+def generate_yaml(fcstd_path, output_path):
+    """Generate YAML stats file using stats.py logic"""
     
-    material_weights = {}  # {material_name: weight_kg}
-    material_volumes = {}  # {material_name: weight_kg}
-    processed_labels = set()  # Track which objects we've already counted
+    print(f"Opening {fcstd_path}...")
+    doc = App.openDocument(fcstd_path)
+    
+    boat = boat_name_from_file(fcstd_path)
+    config = config_from_file(fcstd_path)
+    
+    # Collect statistics using same logic as stats.py
+    material_weights = {}
+    material_volumes = {}
+    processed_labels = set()
+    all_components = []
     
     def get_all_objects(obj_list):
         """Recursively get all objects including those in groups"""
         all_objs = []
         for obj in obj_list:
             all_objs.append(obj)
-            # If it's a group/part, recurse into it
             if hasattr(obj, 'Group'):
                 all_objs.extend(get_all_objects(obj.Group))
         return all_objs
     
     all_objects = get_all_objects(doc.Objects)
-    print(f"Searching through {len(all_objects)} objects (including grouped)...")
     
     for obj in all_objects:
         if not hasattr(obj, 'Shape'):
             continue
         
-        # Skip if we've already processed this object (by its unique label)
         if obj.Label in processed_labels:
             continue
         
-        # Look for material name - FreeCAD replaces () with __
+        # Look for material name
         label = obj.Label
         label_lower = label.lower()
         mat_key = None
         
-        # FreeCAD converts blanks and parentheses to _
         if '__' in label_lower:
             parts = label_lower.split('__')
             if len(parts) >= 2:
-                # Handle cases like "Deck__plywood_001" - extract just "plywood"
                 mat_key = parts[1].rstrip('_0123456789').strip()
         
         if mat_key and mat_key in material:
             mat = material[mat_key]
             volume_m3 = obj.Shape.Volume / 1e9
+            volume_liters = volume_m3 * 1000
             weight_kg = volume_m3 * mat['Density']
             
+            # Track by material
             if mat['Name'] not in material_weights:
                 material_weights[mat['Name']] = 0
-            material_weights[mat['Name']] += weight_kg
-            
-            if mat['Name'] not in material_volumes:
                 material_volumes[mat['Name']] = 0
-            material_volumes[mat['Name']] += volume_m3 * 1000 # liters
+            material_weights[mat['Name']] += weight_kg
+            material_volumes[mat['Name']] += volume_liters
+            
+            # Track individual component
+            all_components.append({
+                'name': obj.Label,
+                'mass_kg': weight_kg,
+                'volume_liters': volume_liters,
+                'material': mat['Name']
+            })
             
             processed_labels.add(obj.Label)
-            print(f"{obj.Label}: {weight_kg:.3f} kg ({mat['Name']})")
-            print(f"{obj.Label}: {volume_m3 * 1000:.3f} liters")
     
-    print(f"\n{'='*60}")
-    print(f"Weight by materials:\n")
-    total_weight = 0
-    for mat_name, weight_kg in material_weights.items():
-        total_weight += weight_kg
-        print(f"{mat_name}: {weight_kg:.2f} kg")
+    total_mass = sum(material_weights.values())
+    total_volume = sum(material_volumes.values())
     
-    print(f"\nTotal weight: {total_weight:.2f} kg")
-
-    print(f"{'='*60}")
-
-    print(f"Volume by materials:\n")
-    total_volume = 0
-    for mat_name, volume_liters in material_volumes.items():
-        total_volume += volume_liters
-        print(f"{mat_name}: {volume_liters:.2f} liters")
+    # Create YAML content
+    yaml_lines = [
+        f"# Auto-generated statistics for {boat} - {config}",
+        f"boat: {boat}",
+        f"configuration: {config}",
+    ]
     
-    print(f"\nTotal volume: {total_volume:.2f} kg")
-    print(f"\nTotal displacement in salt water: {total_volume * 1.025:.2f} kg")
-
-    print(f"{'='*60}")
-
-    # Calculate unsinkable displacement (parts that won't fill with water)
-    unsinkable_volume = 0  # in mm³
-
-    for obj in FreeCAD.ActiveDocument.Objects:
-        # Check if object name contains "__*_" pattern (sealed/watertight parts)
-        if "__" in obj.Name and obj.Name.count("_") >= 3:  # matches __*_ pattern
-            if hasattr(obj, 'Shape') and obj.Shape:
-                unsinkable_volume += obj.Shape.Volume
-
-    # Convert to liters or m³
-    unsinkable_volume_liters = unsinkable_volume / 1e6  # mm³ to liters
-    unsinkable_volume_m3 = unsinkable_volume / 1e9  # mm³ to m³
-
-    # Calculate displacement in kg (1 liter fresh water = 1 kg, seawater ~1.025 kg)
-    unsinkable_displacement_kg = unsinkable_volume_liters * 1.025  # seawater
-
-    print(f"Unsinkable volume: {unsinkable_volume_m3:.3f} m^3 ({unsinkable_volume_liters:.1f} liters)")
-    print(f"Unsinkable displacement in salt water: {unsinkable_displacement_kg:.1f} kg")
-
-    print(f"{'='*60}")
-
-    print(f"Useful measurements:\n")
-    print(f"cockpit length: {cockpit_length} mm")
-    print(f"ama cone length: {ama_cone_length} mm")
-    print(f"beam: {beam} mm")
-    print(f"deck stringer separation: {(deck_width - stringer_width) / (deck_stringers - 1) - stringer_width} mm")
-    print(f"sole foam volume: {FreeCAD.ActiveDocument.getObject('Foam_Below_Sole__foam_').Shape.Volume / 1000000:.1f} liters")
-    print(f"ama foam volume: {FreeCAD.ActiveDocument.getObject('Ama_Body_Foam__foam_').Shape.Volume / 1000000 * 2:.1f} liters")
-    print(f"sole foam displacement in salt water: {FreeCAD.ActiveDocument.getObject('Foam_Below_Sole__foam_').Shape.Volume / 1000000 * 1.025:.1f} kg")
-    print(f"ama foam displacement in salt water: {FreeCAD.ActiveDocument.getObject('Ama_Body_Foam__foam_').Shape.Volume / 1000000 * 1.025 * 2 + FreeCAD.ActiveDocument.getObject('Ama_Cone_Foam__foam_').Shape.Volume / 1000000 * 1.025 * 2:.1f} kg")
-    print(f"{'='*60}\n")
+    loa_m = vaka_length / 1000.0
+    beam_m = beam / 1000.0
+    cockpit_length_m = cockpit_length / 1000.0
     
-    return total_weight
+    yaml_lines.extend([
+        f"LOA_m: {loa_m:.1f}",
+        f"beam_m: {beam_m:.1f}",
+        f"cockpit_length_m: {cockpit_length_m:.2f}",
+        f"total_mass_kg: {total_mass:.2f}",
+        f"total_volume_liters: {total_volume:.2f}",
+        f"displacement_saltwater_kg: {total_volume * 1.025:.2f}",
+        "",
+        "materials:"
+    ])
+    
+    # Add materials
+    for mat_name in sorted(material_weights.keys()):
+        yaml_lines.append(f"  {mat_name}:")
+        yaml_lines.append(f"    mass_kg: {material_weights[mat_name]:.2f}")
+        yaml_lines.append(f"    volume_liters: {material_volumes[mat_name]:.2f}")
+    
+    yaml_lines.append("")
+    yaml_lines.append("top_components:")
+    
+    # Sort by mass and take top 10
+    sorted_components = sorted(all_components, key=lambda x: x['mass_kg'], reverse=True)[:10]
+    for comp in sorted_components:
+        yaml_lines.append(f"  - name: \"{comp['name']}\"")
+        yaml_lines.append(f"    mass_kg: {comp['mass_kg']:.2f}")
+        yaml_lines.append(f"    volume_liters: {comp['volume_liters']:.2f}")
+        yaml_lines.append(f"    material: {comp['material']}")
+    
+    yaml_lines.append("")
+    yaml_lines.append(f"component_count: {len(all_components)}")
+    
+    # Write file
+    os.makedirs(os.path.dirname(output_path) or '.', exist_ok=True)
+    with open(output_path, 'w') as f:
+        f.write('\n'.join(yaml_lines))
+    
+    print(f"✓ Generated {output_path}")
+    print(f"  Total mass: {total_mass:.2f} kg")
+    if loa_m:
+        print(f"  LOA: {loa_m:.1f} m")
+    if beam_m:
+        print(f"  Beam: {beam_m:.1f} m")
+    print(f"  Materials: {len(material_weights)}")
+    print(f"  Components: {len(all_components)}")
+    
+    App.closeDocument(doc.Name)
 
-
+if __name__ == "__main__":
+    # Try environment variables first (Linux CI/CD), then command line args (Mac)
+    fcstd = os.environ.get('FCSTD_FILE')
+    output = os.environ.get('OUTPUT_YAML')
+    
+    if not fcstd and len(sys.argv) >= 3:
+        # Mac fallback - command line args
+        fcstd = sys.argv[1]
+        output = sys.argv[2]
+    
+    if not fcstd or not output:
+        print("Usage: generate_stats_yaml.py <fcstd_file> <output_yaml>")
+        print("Or set FCSTD_FILE and OUTPUT_YAML environment variables")
+        sys.exit(1)
+    
+    if not os.path.exists(fcstd):
+        print(f"ERROR: {fcstd} not found")
+        sys.exit(1)
+    
+    generate_yaml(fcstd, output)

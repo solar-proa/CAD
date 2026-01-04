@@ -88,10 +88,6 @@ print("Importing central...")
 if 'central' in sys.modules: del sys.modules['central']
 from central import *
 
-print("Importing stats...")
-if 'stats' in sys.modules: del sys.modules['stats']
-from stats import *
-
 print("Importing material...")
 if 'material' in sys.modules: del sys.modules['material']
 from material import *
@@ -217,10 +213,6 @@ central(vessel)
 
 # recompute before stats and rendering
 doc.recompute()
-
-# print out stats
-
-calculate_weight(doc)
 
 # Save the document (with boat-specific name)
 # Get the boat name from param_file (e.g., 'boats.RP2' -> 'RP2')

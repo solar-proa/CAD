@@ -214,18 +214,18 @@ def export_renders(fcstd_path, output_render):
 if __name__ == "__main__":
     # Get arguments from environment variables (passed by Makefile)
     fcstd_path = os.environ.get('FCSTD_FILE')
-    output_render = os.environ.get('OUTPUT_RENDER')
+    render_dir = os.environ.get('RENDER_DIR')
     
-    if not fcstd_path or not output_render:
-        print("ERROR: FCSTD_FILE and OUTPUT_RENDER environment variables must be set")
+    if not fcstd_path or not render_dir:
+        print("ERROR: FCSTD_FILE and RENDER_DIR environment variables must be set")
         print(f"FCSTD_FILE={fcstd_path}")
-        print(f"OUTPUT_RENDER={output_render}")
+        print(f"RENDER_DIR={render_dir}")
         sys.exit(1)
     
     print(f"Input file: {fcstd_path}")
-    print(f"Output dir: {output_render}")
+    print(f"Output dir: {render_dir}")
     
-    success = export_renders(fcstd_path, output_render)
+    success = export_renders(fcstd_path, render_dir)
     
     # Exit cleanly
     import os as _os
