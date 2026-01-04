@@ -24,13 +24,13 @@ except ImportError as e:
     sys.exit(1)
 
 def boat_name_from_file(filename):
-    """Extract boat name: RotiProa_RP2_Config.FCStd -> RP2"""
+    """Extract boat name: SolarProa_RP2_Config.FCStd -> RP2"""
     base = os.path.basename(filename).replace('.FCStd', '')
     parts = base.split('_')
     return parts[1] if len(parts) >= 2 else 'Unknown'
 
 def config_from_file(filename):
-    """Extract configuration: RotiProa_RP2_CloseHaul.FCStd -> CloseHaul"""
+    """Extract configuration: SolarProa_RP2_CloseHaul.FCStd -> CloseHaul"""
     base = os.path.basename(filename).replace('.FCStd', '')
     parts = base.split('_')
     return parts[2] if len(parts) >= 3 else 'Default'

@@ -1,4 +1,4 @@
-# Makefile for Roti Proa FreeCAD project
+# Makefile for Solar Proa FreeCAD project
 
 # Detect operating system
 UNAME := $(shell uname)
@@ -19,10 +19,9 @@ endif
 
 # Directories
 SRC_DIR := src
-OUTPUT_DIR := output
-RENDER_DIR := $(OUTPUT_DIR)/renders
-EXPORT_DIR := $(OUTPUT_DIR)/exports
-
+DESIGN_DIR := output_designs
+RENDER_DIR := output_renders
+EXPORT_DIR := output_exports
 # Discover all boats and configurations dynamically
 BOATS := $(basename $(notdir $(wildcard $(SRC_DIR)/boats/*.py)))
 CONFIGS := $(basename $(notdir $(wildcard $(SRC_DIR)/configurations/*.py)))
@@ -39,14 +38,14 @@ PARAMS := boats.$(BOAT)
 CONFIG ?= CloseHaul
 CONFIG_PARAM := configurations.$(CONFIG)
 
-OUTPUT_NAME := RotiProa_$(BOAT)_$(CONFIG)
+DESIGN_NAME := SolarProa_$(BOAT)_$(CONFIG)
 
 # Main macro
-MACRO := $(SRC_DIR)/RotiProa.FCMacro
+MACRO := $(SRC_DIR)/SolarProa.FCMacro
 
-# Output files
-FCSTD := $(OUTPUT_DIR)/$(OUTPUT_NAME).FCStd
-STEP := $(EXPORT_DIR)/$(OUTPUT_NAME).step
+# Design files
+FCSTD := $(DESIGN_DIR)/$(DESIGN_NAME).FCStd
+STEP := $(EXPORT_DIR)/$(DESIGN_NAME).step
 
 # Default target - build all boats with all configurations
 .PHONY: all
@@ -58,11 +57,11 @@ all:
 	@echo "All builds complete!"
 
 # Create output directories
-$(OUTPUT_DIR) $(RENDER_DIR) $(EXPORT_DIR):
+$(DESIGN_DIR) $(RENDER_DIR) $(EXPORT_DIR):
 	mkdir -p $@
 
 .PHONY: build
-build: $(OUTPUT_DIR)
+build: $(DESIGN_DIR)
 	@echo "Building $(BOAT) with $(CONFIG) configuration..."
 	@$(FREECAD_CMD) $(MACRO) $(PARAMS) $(CONFIG_PARAM) || true
 	@if [ -f "$(FCSTD)" ]; then \
@@ -73,7 +72,7 @@ build: $(OUTPUT_DIR)
 		fi; \
 		echo "Build complete!"; \
 	else \
-		echo "ERROR: Build failed - no output file created"; \
+		echo "ERROR: Build failed - no design file created"; \
 		exit 1; \
 	fi
 
@@ -98,13 +97,13 @@ render: build $(RENDER_DIR)
 # Render all generated FCStd files
 # Generate YAML stats files for Jekyll
 .PHONY: stats-yaml
-stats-yaml: $(OUTPUT_DIR)
+stats-yaml: $(DESIGN_DIR)
 	@echo "Generating YAML statistics for Jekyll..."
 	@mkdir -p docs/_data
-	@for fcstd in $(OUTPUT_DIR)/*.FCStd; do \
+	@for fcstd in $(DESIGN_DIR)/*.FCStd; do \
 		if [ -f "$$fcstd" ]; then \
 			base=$$(basename "$$fcstd" .FCStd); \
-			yaml_name=$$(echo "$$base" | tr '[:upper:]' '[:lower:]' | sed 's/rotiproa_//'); \
+			yaml_name=$$(echo "$$base" | tr '[:upper:]' '[:lower:]' | sed 's/solarproa_//'); \
 			echo "Generating stats for $$base..."; \
 			if [ "$(UNAME)" = "Darwin" ]; then \
 				PYTHONPATH=/Applications/FreeCAD.app/Contents/Resources/lib:/Applications/FreeCAD.app/Contents/Resources/Mod \
@@ -120,13 +119,13 @@ stats-yaml: $(OUTPUT_DIR)
 .PHONY: render-all
 render-all: $(RENDER_DIR)
 	@echo "Rendering images from all FCStd files..."
-	@for fcstd in $(OUTPUT_DIR)/*.FCStd; do \
+	@for fcstd in $(DESIGN_DIR)/*.FCStd; do \
 		if [ -f "$$fcstd" ]; then \
 			echo "Rendering $$fcstd..."; \
 			if [ "$(UNAME)" = "Darwin" ]; then \
 				$(SRC_DIR)/export_renders_mac.sh "$$fcstd" "$(RENDER_DIR)" "$(FREECAD_APP)" || true; \
 			else \
-				FCSTD_FILE="$$fcstd" OUTPUT_DIR="$(RENDER_DIR)" freecad-python $(SRC_DIR)/export_renders.py || true; \
+				FCSTD_FILE="$$fcstd" DESIGN_DIR="$(RENDER_DIR)" freecad-python $(SRC_DIR)/export_renders.py || true; \
 			fi \
 		fi \
 	done
@@ -147,8 +146,14 @@ render-all: $(RENDER_DIR)
 # Clean generated files
 .PHONY: clean
 clean:
-	@echo "Cleaning output files..."
-	rm -rf $(OUTPUT_DIR)
+	@echo "Cleaning design files..."
+	rm -rf $(DESIGN_DIR)
+	@echo "Cleaning render files..."
+	rm -rf $(RENDER_DIR)
+	@echo "Cleaning export files..."
+	rm -rf $(EXPORT_DIR)
+	@echo "Removing backup files..."
+	rm -rf *~
 	@echo "Clean complete!"
 
 # Build specific boats with all configurations
@@ -186,7 +191,7 @@ stats: build
 # Help
 .PHONY: help
 help:
-	@echo "Roti Proa Makefile"
+	@echo "Solar Proa Makefile"
 	@echo ""
 	@echo "Platform: $(UNAME)"
 	@echo "Discovered boats: $(BOATS)"
@@ -228,3 +233,10 @@ check:
 	@echo "Checking for FreeCAD..."
 	@$(FREECAD) --version || (echo "FreeCAD not found!" && exit 1)
 	@echo "FreeCAD found: $(FREECAD)"
+
+# Serve website locally
+.PHONY: localhost
+localhost:
+	@echo "Serving website in localhost..."
+	cd docs; bundle exec jekyll serve
+

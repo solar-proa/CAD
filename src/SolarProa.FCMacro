@@ -105,7 +105,7 @@ for doc_name in App.listDocuments():
 # initialize FreeCAD document
 # In console mode, there's no ActiveDocument, so create one
 
-doc_name = "Roti Proa"
+doc_name = "Solar Proa"
 
 # Close all open documents first
 for d in FreeCAD.listDocuments().values():
@@ -231,10 +231,10 @@ boat_name = param_file.split('.')[-1] if '.' in param_file else 'default'
 configuration_name = configuration_file.split('.')[-1] if '.' in configuration_file else 'default'
 
 # Create output directory relative to the CAD directory (parent of src)
-output_dir = os.path.join(current_dir, "..", "output")
+output_dir = os.path.join(current_dir, "..", "output_designs")
 os.makedirs(output_dir, exist_ok=True)
 
-output_path = os.path.join(output_dir, f"RotiProa_{boat_name}_{configuration_name}.FCStd")
+output_path = os.path.join(output_dir, f"SolarProa_{boat_name}_{configuration_name}.FCStd")
 
 # Save the document FIRST
 doc.saveAs(output_path)

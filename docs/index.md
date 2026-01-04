@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Roti Proa - Solar-Electric Proa Designs
+title: Solar Proa - Solar-Electric Proa Designs
 ---
 
 <div style="text-align: center; padding: 2em 0;">
@@ -12,7 +12,7 @@ title: Roti Proa - Solar-Electric Proa Designs
 
 ## Executive Summary
 
-Project Prahu Surya Layar is developing solar-electric hybrid vessels for carbon-neutral eco-tourism in tropical Southeast Asia, with a 9-meter MVP Roti Proa II completing mid-2026 and strategic partnerships available for commercial validation.
+Project Prahu Surya Layar is developing solar-electric hybrid vessels for carbon-neutral eco-tourism in tropical Southeast Asia, with a 9-meter MVP _Roti Proa II_ completing mid-2026 and strategic partnerships available for commercial validation.
 
 ---
 

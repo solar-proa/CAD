@@ -2,6 +2,8 @@
 __pycache__
 .DS_Store
 *.zip
-output/
+output_designs/
+output_renders/
+output_exports/
 *.FCStd
 *.FCStd1

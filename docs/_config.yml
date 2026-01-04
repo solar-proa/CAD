@@ -2,7 +2,7 @@ title: Prahu Surya Layar
 description: Solar-Electric Hybrid Vessels for Tropical Eco-Tourism
 theme: jekyll-theme-cayman
 baseurl: /CAD
-repository: roti-proa/CAD
+repository: solar-proa/CAD
 
 # Build settings
 markdown: kramdown
