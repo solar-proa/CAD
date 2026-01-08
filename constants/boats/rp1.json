@@ -1,0 +1,121 @@
+{
+  "boat_description": "Base parameters for RP1 - smaller prototype",
+  "boat_name": "rp1",
+  
+  "panels_longitudinal": 4,
+  "panels_transversal": 2,
+  "deck_stringers": 3,
+  
+  "panel_length": 1762,
+  "panel_width": 1134,
+  "panel_height": 4,
+  
+  "deck_width": 1500,
+  "deck_thickness": 9,
+  
+  "ama_diameter": 300,
+  "ama_thickness": 8,
+  "ama_length": 7000,
+  
+  "stringer_width_inches": 1,
+  "stringer_thickness": 3,
+  
+  "aka_width": 76.2,
+  "aka_height": 101.6,
+  "aka_thickness": 4.5,
+  
+  "aka_cap_thickness": 5,
+  "aka_cap_diameter": 150,
+  
+  "vaka_length": 7000,
+  "vaka_width": 1000,
+  "vaka_thickness": 5,
+  
+  "overhead_thickness": 3,
+  "sole_thickness": 9,
+  "bottom_height_inches": 6,
+  
+  "crossdeck_width": 700,
+  
+  "gunwale_width_inches": 3,
+  "gunwale_height_inches": 2,
+  "freeboard": 1000,
+  
+  "stanchion_diameter": 20,
+  "stanchion_length": 500,
+  "stanchion_thickness": 3,
+  
+  "brace_diameter": 5,
+  "brace_upper_offset": 100,
+  "brace_lower_offset": 350,
+  "pillar_brace_vertical_offset": 400,
+  
+  "mast_diameter": 127,
+  "mast_thickness": 5,
+  "mast_height": 7000,
+  "mast_distance_from_center_offset": 100,
+  
+  "mast_partner_width_offset": 150,
+  "mast_partner_thickness": 40,
+  "mast_partner_vaka_clearance": 120,
+  
+  "mast_step_diameter_offset": 80,
+  "mast_step_height": 80,
+  
+  "mast_handle_diameter": 20,
+  "mast_handle_thickness": 3,
+  "mast_handle_length": 500,
+  "mast_handle_height_above_deck": 500,
+  
+  "mast_cap_thickness": 3,
+  "mast_cap_diameter": 130,
+  
+  "yard_spar_length": 400,
+  "yard_spar_width": 40,
+  "yard_spar_thickness": 8,
+  "yard_spar_distance_from_top": 400,
+  
+  "yard_diameter": 50,
+  "yard_thickness": 2.5,
+  "yard_length": 4500,
+  
+  "boom_diameter": 50,
+  "boom_thickness": 2.5,
+  "boom_length": 4500,
+  
+  "sail_height": 4500,
+  "sail_width": 4500,
+  "sail_thickness": 2,
+  
+  "rudder_post_diameter": 40,
+  "rudder_blade_length": 400,
+  "rudder_blade_height": 400,
+  "rudder_blade_thickness": 5,
+  "rudder_distance_from_vaka": 200,
+  "rudder_below_bottom": 400,
+  
+  "rudder_bearing_block_diameter": 70,
+  "rudder_aka_mount_pin_diameter": 8,
+  "rudder_aka_mount_pin_length": 120,
+  
+  "rudder_vaka_mount_length": 600,
+  "rudder_vaka_mount_angle": 5,
+  "rudder_vaka_backing_plate_thickness": 8,
+  
+  "rudder_ribs": 4,
+  "rudder_rim": 25,
+  "rudder_rib_diameter": 8,
+  "rudder_rib_clearance": 40,
+  
+  "tiller_angle": 7,
+  
+  "motor_backing_plate_length": 250,
+  "motor_backing_plate_height": 250,
+  "motor_backing_plate_thickness": 8,
+  "motor_backing_plate_above_sole": 500,
+  
+  "side_board_plate_length": 250,
+  "side_board_plate_height": 250,
+  "side_board_plate_thickness": 8,
+  "side_board_plate_above_sole": 500
+}

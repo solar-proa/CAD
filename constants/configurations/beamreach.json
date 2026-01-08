@@ -1,0 +1,23 @@
+{
+  "configuration_description": "Beam reach sailing configuration for solar proa",
+  "configuration_name": "beamreach",
+  
+  "required_validators": [
+    "mass",
+    "buoyancy",
+    "stability"
+  ],
+  
+  "sail_camber_biru": 5000,
+  "sail_camber_kuning": 5000,
+  "sail_angle_biru": 0,
+  "sail_angle_kuning": 0,
+  "rig_rotation_biru": 0,
+  "rig_rotation_kuning": 0,
+  "rudder_rotation_biru": 0,
+  "rudder_raised_biru": false,
+  "rudder_rotation_kuning": 0,
+  "rudder_raised_kuning": false,
+  "reefing_percentage_biru": 0,
+  "reefing_percentage_kuning": 0
+}

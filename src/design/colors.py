@@ -2,11 +2,14 @@
 color_deck = (0.68, 0.85, 0.90)  # light blue
 color_solar_panel = (0.3, 0.3, 0.3)  # dark grey
 color_aluminum = (0.75, 0.75, 0.78)  # aluminum
+color_steel = (0.65, 0.65, 0.68)  # steel
+color_plastic = (0.12, 0.90, 0.50)  # plastic
 color_hull_interior = (0.5, 0.5, 0.5)  # grey
 color_hull_exterior = (1.0, 1.0, 1.0)  # white
 color_bottom = (0.9, 0.1, 0.1)  # spinnaker red
 color_sole = (0.76, 0.60, 0.42)  # light brown (plywood)
 color_plywood = (0.76, 0.60, 0.42)  # light brown (plywood)
+color_wood = (0.66, 0.50, 0.32)  # brown (wood)
 color_bamboo = (0.86, 0.70, 0.52)  # light brown (bamboo)
 color_sail = (0.95, 0.95, 0.88)  # off-white/cream for sail
 color_ama = (1.0, 1.0, 1.0)  # white
