@@ -5,20 +5,26 @@ Generate downloads.yml for Jekyll from available configurations
 
 import os
 import sys
+import json
 
-def generate_downloads_yaml(boat, config_dir, output_path):
+def generate_downloads_yaml(boat, config_dir, artifacts_dir, output_path):
     """Generate YAML file listing available configurations"""
     
-    # Get all configuration files
+    # Get all configuration files from constants/configurations
     configs = []
     
     for f in os.listdir(config_dir):
-        if f.endswith('.py') and f != 'default.py' and not f.startswith('__'):
-            config_name = f.replace('.py', '')
-            configs.append(config_name)
+        if f.endswith('.json') and not f.startswith('_'):
+            config_name = f.replace('.json', '')
+            # Convert to proper case (beaching -> Beaching, closehaul -> CloseHaul, etc.)
+            config_display = config_name.title().replace('haul', 'Haul').replace('wing', 'Wing')
+            configs.append({
+                'name': config_display,
+                'key': config_name
+            })
     
-    # Sort configs
-    configs.sort()
+    # Sort configs by key
+    configs.sort(key=lambda x: x['key'])
     
     # Generate YAML
     yaml_lines = [
@@ -28,19 +34,22 @@ def generate_downloads_yaml(boat, config_dir, output_path):
     ]
     
     for config in configs:
-        yaml_lines.append(f"  - name: {config}")
-        yaml_lines.append(f"    filename: SolarProa_{boat}_{config}.FCStd")
+        yaml_lines.append(f"  - name: {config['name']}")
+        # Check if FCStd file exists in artifacts
+        fcstd_filename = f"{boat.lower()}.{config['key']}.design.FCStd"
+        yaml_lines.append(f"    filename: {fcstd_filename}")
+        
         # Add friendly description
         descriptions = {
-            'Beaching': 'Rigging stowed, solar deployed',
-            'BeamReach': 'Crosswind, optimal speed',
-            'BroadReach': 'Downwind angle',
-            'CloseHaul': 'Upwind sailing, tight angle',
-            'CloseHaulReefed': 'Reduced sail in strong winds',
-            'GooseWing': 'Running downwind'
+            'beaching': 'Rigging stowed, solar deployed',
+            'beamreach': 'Crosswind, optimal speed',
+            'broadreach': 'Downwind angle',
+            'closehaul': 'Upwind sailing, tight angle',
+            'closehaulreefed': 'Reduced sail in strong winds',
+            'goosewing': 'Running downwind'
         }
-        if config in descriptions:
-            yaml_lines.append(f"    description: {descriptions[config]}")
+        if config['key'] in descriptions:
+            yaml_lines.append(f"    description: {descriptions[config['key']]}")
     
     # Write file
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
@@ -50,20 +59,24 @@ def generate_downloads_yaml(boat, config_dir, output_path):
     print(f"✓ Generated {output_path} ({len(configs)} configurations)")
 
 if __name__ == "__main__":
-    # Determine script location
+    # Determine paths relative to repository root
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    config_dir = os.path.join(script_dir, 'configurations')
+    repo_root = os.path.join(script_dir, '..', '..')
+    config_dir = os.path.join(repo_root, 'constants', 'configurations')
+    artifacts_dir = os.path.join(repo_root, 'artifacts')
     
     # Check if config directory exists
     if not os.path.exists(config_dir):
         print(f"ERROR: Configuration directory not found: {config_dir}")
+        print(f"Script dir: {script_dir}")
+        print(f"Repo root: {repo_root}")
         sys.exit(1)
     
     # Generate for all boats
-    boats = ['RP1', 'RP2', 'RP3']
+    boats = ['rp1', 'rp2', 'rp3']
     
     for boat in boats:
-        output = os.path.join(script_dir, '..', 'docs', '_data', f'{boat.lower()}_downloads.yml')
-        generate_downloads_yaml(boat, config_dir, output)
+        output = os.path.join(repo_root, 'docs', '_data', f'{boat}_downloads.yml')
+        generate_downloads_yaml(boat.upper(), config_dir, artifacts_dir, output)
     
     print("All downloads YAML files generated!")

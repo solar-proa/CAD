@@ -95,6 +95,11 @@ jobs:
           mkdir -p docs/renders
           cp artifacts/*.png docs/renders/ 2>/dev/null || echo "No renders to copy"
       
+      - name: Copy FCStd models to downloads folder
+        run: |
+          mkdir -p docs/downloads
+          cp artifacts/*.design.FCStd docs/downloads/ 2>/dev/null || echo "No FCStd files to copy"
+      
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
         with:
