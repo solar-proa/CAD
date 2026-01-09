@@ -27,7 +27,7 @@ except NameError:
     macro_dir = FreeCAD.getUserMacroDir(True)
 
 # Find repository root
-repo_root = os.path.abspath(os.path.join(macro_dir, '..', '..'))
+repo_root = macro_dir
 
 print(f"Repository root: {repo_root}")
 
