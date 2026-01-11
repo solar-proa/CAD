@@ -64,31 +64,10 @@ jobs:
           # Add to PATH
           echo "$PWD" >> $GITHUB_PATH
       
-      - name: Build all FreeCAD models
+      - name: Build all required FreeCAD models and run all stages
         run: |
-          make design-all
+          make required-all
 
-      - name: Validate all configurations
-        run: |
-          make validate-all
-      
-      - name: Verify validation artifacts were created
-        run: |
-          echo "=== Checking for validate files ==="
-          if ls artifacts/*.validate.json 1> /dev/null 2>&1; then
-            echo "Found $(ls artifacts/*.validate.json | wc -l) validate files:"
-            ls -lh artifacts/*.validate.json
-          else
-            echo "ERROR: No validate files found! Validation may have failed."
-            echo "Checking for design files:"
-            ls -lh artifacts/*.design.FCStd || echo "No design files either"
-            exit 1
-          fi
-
-      - name: Export renders from all models
-        run: |
-          make render-all
-      
       - name: Generate downloads YAML files
         run: |
           python3 docs/generate_downloads_yaml.py
@@ -114,7 +93,7 @@ jobs:
             exit 1
           fi
       
-      - name: Copy renders to docs folder
+      - name: Copy renders to docs/renders folder
         run: |
           mkdir -p docs/renders
           if ls artifacts/*.png 1> /dev/null 2>&1; then
@@ -124,7 +103,7 @@ jobs:
             echo "WARNING: No render PNG files found in artifacts/"
           fi
       
-      - name: Copy FCStd models to downloads folder
+      - name: Copy FCStd models to docs/downloads folder
         run: |
           mkdir -p docs/downloads
           if ls artifacts/*.FCStd 1> /dev/null 2>&1; then

@@ -93,7 +93,7 @@
     },
     "nylon": {
       "name": "Nylon",
-      "color": [0.9, 0.8, 0.5],
+      "color": [0.9, 0.8, 0.4],
       "transparency": 0,
       "display_mode": "Shaded",
       "density_kg_m3": 1000,

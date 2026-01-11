@@ -2,8 +2,9 @@
   "configuration_description": "Beaching configuration - boat on shore with sails down",
   "configuration_name": "beaching",
   
-  "required_validators": [
-    "mass"
+  "required": [
+      "mass",
+      "render"
   ],
   
   "sail_camber_biru": 10000,

@@ -1,4 +1,5 @@
 # TODOs for this repo
 
-- refactor validate artifacts: there is no need for these artifacts
-- currently not using required_validators in configuration json files
+- add targets/artifacts for buoyancy and stability
+- generate_downloads_yaml.py needs refactoring: do not hardwire "rp1-3"
+

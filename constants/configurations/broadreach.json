@@ -1,11 +1,9 @@
 {
-  "configuration_description": "Broad reach sailing configuration for solar proa",
+  "configuration_description": "Broad reach sailing configuration",
   "configuration_name": "broadreach",
   
-  "required_validators": [
-    "mass",
-    "buoyancy",
-    "stability"
+  "required": [
+    "render"
   ],
   
   "sail_camber_biru": 3000,

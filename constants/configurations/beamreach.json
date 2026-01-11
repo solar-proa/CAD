@@ -1,11 +1,9 @@
 {
-  "configuration_description": "Beam reach sailing configuration for solar proa",
+  "configuration_description": "Beam reach sailing configuration",
   "configuration_name": "beamreach",
   
-  "required_validators": [
-    "mass",
-    "buoyancy",
-    "stability"
+  "required": [
+    "render"
   ],
   
   "sail_camber_biru": 4000,

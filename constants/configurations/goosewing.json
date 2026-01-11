@@ -1,11 +1,9 @@
 {
-  "configuration_description": "Goose-wing sailing configuration for solar proa",
+  "configuration_description": "Goose-wing sailing configuration",
   "configuration_name": "goosewing",
   
-  "required_validators": [
-    "mass",
-    "buoyancy",
-    "stability"
+  "required": [
+    "render"
   ],
   
   "sail_camber_biru": 10000,

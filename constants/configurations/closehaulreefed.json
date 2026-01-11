@@ -1,11 +1,8 @@
 {
-  "configuration_description": "Close haul reefed sailing configuration for solar proa",
+  "configuration_description": "Close haul reefed sailing configuration",
   "configuration_name": "closehaulreefed",
   
-  "required_validators": [
-    "mass",
-    "buoyancy",
-    "stability"
+  "required": [
   ],
   
   "sail_camber_biru": 5000,
