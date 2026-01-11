@@ -45,7 +45,6 @@ def generate_downloads_yaml(boat, config_dir, artifacts_dir, output_path):
             'beamreach': 'Crosswind, optimal speed',
             'broadreach': 'Downwind angle',
             'closehaul': 'Upwind sailing, tight angle',
-            'closehaulreefed': 'Reduced sail in strong winds',
             'goosewing': 'Running downwind'
         }
         if config['key'] in descriptions:
