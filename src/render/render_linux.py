@@ -119,7 +119,7 @@ def export_renders(fcstd_path, output_render):
         view.fitAll()
         
         # Export as PNG
-        clean_name = base_name.replace('.design', '')
+        clean_name = base_name.replace('.color', '')
         output_path = os.path.join(output_render, f"{clean_name}.render.{view_name}.png")
         view.saveImage(output_path, 1920, 1080, 'White')
         

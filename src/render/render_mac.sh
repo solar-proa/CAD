@@ -71,7 +71,7 @@ for view_name, view_method in views:
     view.fitAll()
     
     # Export as PNG 
-    clean_name = base_name.replace('.design', '')
+    clean_name = base_name.replace('.color', '')
     output_path = os.path.join(output_dir, f"{clean_name}.render.{view_name}.png")
     view.saveImage(output_path, 1920, 1080, 'White')
     
