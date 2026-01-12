@@ -11,17 +11,17 @@ title: Solar Proa - Wind-solar-powered Outrigger Boats
 ## At a glance
 
 Project _Solar Proa_ is developing wind-solar-powered hybrid vessels for carbon-neutral small-scale tropical maritime transport, exploration, and tourism.
-Completion of our 9-meter minimal viable product _Roti Proa II_ is targeted for mid-2026 and strategic partnerships are available for commercial validation.
+The completion of our 9-meter minimal viable product _Roti Proa II_ is targeted for mid-2026 and strategic partnerships are available for commercial validation.
 
 ---
 
 ## The vision
 
-Electric vehicle adoption across Asia has created new expectations for quiet, clean transportation - expectations that extend to maritime sector. We're bringing carbon-neutral propulsion to water transport, island-hopping, snorkeling, and diving tourism through vessels that combine:
+Electric vehicle adoption across Asia has created new expectations for quiet, clean transportation - expectations that extend to maritime sector. Project Solar Proa is bringing carbon-neutral propulsion to water transport, island-hopping, snorkeling, and diving tourism with vessels that combine:
 
-- **Traditional Design** - Inspired by Austronesian outrigger proas and Indonesian sailing traditions
-- **Modern Engineering** - Parametric CAD design, aluminum construction, efficient electric propulsion
-- **Renewable Energy** - 4kW solar arrays plus sail propulsion for zero-emission operation
+- **Traditional Design** - Inspired by Austronesian outrigger proas and Indonesian sailing 
+- **Modern Engineering** - Parametric CAD design, aluminum construction, and efficient electric propulsion
+- **Renewable Energy** - on-board photovoltaic energy harvesting with 4kW solar arrays providing continuous zero-emission operation in combination with traditional sails
 
 ---
 

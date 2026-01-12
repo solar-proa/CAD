@@ -1,15 +1,19 @@
 #!/usr/bin/env python3
 """
-SolarProa GUI Macro - Interactive design generation from FreeCAD GUI
+SolarProa.FCMacro - Interactive design generation and view selector
 
-This macro provides a dialog to select boat and configuration, then calls
-the Makefile to generate the design using the full build pipeline.
+This macro provides a dialog to:
+1. Select boat and configuration
+2. Generate or load the colored design
+3. Select the desired camera view
+4. Optionally toggle camera markers (pink spheres)
 
-This ensures:
-- Parameter changes are picked up
-- Code changes are picked up
-- Full validation pipeline runs
-- Consistent with command-line builds
+Features:
+- Generates design via Makefile (picks up all changes)
+- Loads colored design (*.color.FCStd) with materials applied
+- Sets camera to selected view with proper parameters
+- Creates semi-transparent pink camera marker spheres
+- Supports both standard and specialized views
 """
 
 import FreeCAD
@@ -18,6 +22,14 @@ import os
 import json
 import subprocess
 import platform
+
+# Check if GUI is available
+if not FreeCAD.GuiUp:
+    print("ERROR: This macro requires FreeCAD GUI mode")
+    sys.exit(1)
+
+import FreeCADGui
+from PySide import QtGui, QtCore
 
 # Get the directory where this macro is located
 try:
@@ -28,7 +40,6 @@ except NameError:
 
 # Find repository root
 repo_root = macro_dir
-
 print(f"Repository root: {repo_root}")
 
 # Find available boats and configurations
@@ -41,80 +52,305 @@ configurations = sorted([f.replace('.json', '') for f in os.listdir(configs_dir)
 print(f"Available boats: {boats}")
 print(f"Available configurations: {configurations}")
 
-# Import Qt for dialog
-if FreeCAD.GuiUp:
-    from PySide import QtGui, QtCore
-    
-    class DesignDialog(QtGui.QDialog):
-        def __init__(self):
-            super(DesignDialog, self).__init__()
-            self.setWindowTitle("Solar Proa Design Generator")
-            self.setMinimumWidth(400)
-            
-            layout = QtGui.QVBoxLayout()
-            
-            # Info label
-            info = QtGui.QLabel("Generates design via Makefile (picks up all changes)")
-            info.setStyleSheet("color: #666; font-style: italic;")
-            layout.addWidget(info)
-            
-            # Boat selection
-            boat_group = QtGui.QGroupBox("Select Boat")
-            boat_layout = QtGui.QVBoxLayout()
-            self.boat_combo = QtGui.QComboBox()
-            self.boat_combo.addItems([b.upper() for b in boats])
-            self.boat_combo.setCurrentIndex(boats.index('rp2') if 'rp2' in boats else 0)
-            boat_layout.addWidget(self.boat_combo)
-            boat_group.setLayout(boat_layout)
-            layout.addWidget(boat_group)
-            
-            # Configuration selection
-            config_group = QtGui.QGroupBox("Select Configuration")
-            config_layout = QtGui.QVBoxLayout()
-            self.config_combo = QtGui.QComboBox()
-            # Display with nice names
-            config_names = [c.replace('_', ' ').title() for c in configurations]
-            self.config_combo.addItems(config_names)
-            self.config_combo.setCurrentIndex(configurations.index('closehaul') if 'closehaul' in configurations else 0)
-            config_layout.addWidget(self.config_combo)
-            config_group.setLayout(config_layout)
-            layout.addWidget(config_group)
-            
-            # Buttons
-            button_layout = QtGui.QHBoxLayout()
-            generate_btn = QtGui.QPushButton("Generate Design")
-            generate_btn.clicked.connect(self.accept)
-            generate_btn.setDefault(True)
-            button_layout.addWidget(generate_btn)
-            cancel_btn = QtGui.QPushButton("Cancel")
-            cancel_btn.clicked.connect(self.reject)
-            button_layout.addWidget(cancel_btn)
-            layout.addLayout(button_layout)
-            
-            self.setLayout(layout)
-        
-        def get_boat(self):
-            return boats[self.boat_combo.currentIndex()]
-        
-        def get_configuration(self):
-            return configurations[self.config_combo.currentIndex()]
-    
-    # Show dialog
-    dialog = DesignDialog()
-    if dialog.exec_() != QtGui.QDialog.Accepted:
-        print("Design generation cancelled")
-        sys.exit(0)
-    
-    boat = dialog.get_boat()
-    configuration = dialog.get_configuration()
-else:
-    # Console mode - use defaults
-    boat = 'rp2'
-    configuration = 'closehaul'
 
-print(f"\nGenerating design via Makefile:")
+class DesignViewDialog(QtGui.QDialog):
+    """Integrated dialog for design generation and view selection"""
+    
+    def __init__(self):
+        super(DesignViewDialog, self).__init__()
+        self.setWindowTitle("Solar Proa - Design & View Selector")
+        self.setMinimumWidth(500)
+        self.setMinimumHeight(600)
+        
+        layout = QtGui.QVBoxLayout()
+        
+        # Info label
+        info = QtGui.QLabel("Generate/load colored design and select view")
+        info.setStyleSheet("color: #666; font-style: italic; padding: 5px;")
+        layout.addWidget(info)
+        
+        # Boat selection
+        boat_group = QtGui.QGroupBox("Select Boat")
+        boat_layout = QtGui.QVBoxLayout()
+        self.boat_combo = QtGui.QComboBox()
+        self.boat_combo.addItems([b.upper() for b in boats])
+        self.boat_combo.setCurrentIndex(boats.index('rp2') if 'rp2' in boats else 0)
+        boat_layout.addWidget(self.boat_combo)
+        boat_group.setLayout(boat_layout)
+        layout.addWidget(boat_group)
+        
+        # Configuration selection
+        config_group = QtGui.QGroupBox("Select Configuration")
+        config_layout = QtGui.QVBoxLayout()
+        self.config_combo = QtGui.QComboBox()
+        # Display with nice names
+        config_names = [c.replace('_', ' ').title() for c in configurations]
+        self.config_combo.addItems(config_names)
+        self.config_combo.setCurrentIndex(
+            configurations.index('closehaul') if 'closehaul' in configurations else 0
+        )
+        config_layout.addWidget(self.config_combo)
+        config_group.setLayout(config_layout)
+        layout.addWidget(config_group)
+        
+        # Standard views
+        standard_group = QtGui.QGroupBox("Standard Views")
+        standard_layout = QtGui.QVBoxLayout()
+        
+        self.view_list = QtGui.QListWidget()
+        self.view_list.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
+        
+        self.standard_views = [
+            ("Isometric", "viewIsometric", "3D isometric view"),
+            ("Front", "viewFront", "Front elevation"),
+            ("Top", "viewTop", "Top plan view"),
+            ("Right", "viewRight", "Right side view"),
+        ]
+        
+        for name, _, description in self.standard_views:
+            item = QtGui.QListWidgetItem(f"{name} - {description}")
+            item.setData(QtCore.Qt.UserRole, name)
+            self.view_list.addItem(item)
+        
+        self.view_list.setCurrentRow(0)  # Default to Isometric
+        standard_layout.addWidget(self.view_list)
+        standard_group.setLayout(standard_layout)
+        layout.addWidget(standard_group)
+        
+        # Specialized views
+        specialized_group = QtGui.QGroupBox("Specialized Views (Proa-specific)")
+        specialized_layout = QtGui.QVBoxLayout()
+        
+        self.specialized_list = QtGui.QListWidget()
+        self.specialized_list.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
+        
+        self.specialized_views = [
+            ("Sail View", "sail", "Sail configuration (exterior)"),
+            ("Interior View", "interior", "Inside cabin looking forward"),
+            ("Cockpit View", "cockpit", "Eye level in cockpit"),
+            ("Mast View", "mast", "Top of mast looking down"),
+            ("Below Deck", "below", "Below solar panels"),
+        ]
+        
+        for name, key, description in self.specialized_views:
+            item = QtGui.QListWidgetItem(f"{name} - {description}")
+            item.setData(QtCore.Qt.UserRole, key)
+            self.specialized_list.addItem(item)
+        
+        specialized_layout.addWidget(self.specialized_list)
+        specialized_group.setLayout(specialized_layout)
+        layout.addWidget(specialized_group)
+        
+        # Connect list selections to deselect the other list
+        self.view_list.itemSelectionChanged.connect(
+            lambda: self.specialized_list.clearSelection()
+        )
+        self.specialized_list.itemSelectionChanged.connect(
+            lambda: self.view_list.clearSelection()
+        )
+        
+        # Camera markers checkbox
+        self.markers_checkbox = QtGui.QCheckBox("Show camera markers (pink spheres)")
+        self.markers_checkbox.setChecked(True)
+        self.markers_checkbox.setToolTip("Add semi-transparent markers at camera positions")
+        layout.addWidget(self.markers_checkbox)
+        
+        # Buttons
+        button_layout = QtGui.QHBoxLayout()
+        generate_btn = QtGui.QPushButton("Generate & View")
+        generate_btn.clicked.connect(self.accept)
+        generate_btn.setDefault(True)
+        button_layout.addWidget(generate_btn)
+        
+        cancel_btn = QtGui.QPushButton("Cancel")
+        cancel_btn.clicked.connect(self.reject)
+        button_layout.addWidget(cancel_btn)
+        
+        layout.addLayout(button_layout)
+        
+        self.setLayout(layout)
+    
+    def get_boat(self):
+        return boats[self.boat_combo.currentIndex()]
+    
+    def get_configuration(self):
+        return configurations[self.config_combo.currentIndex()]
+    
+    def get_selected_view(self):
+        """Get the selected view type and method"""
+        # Check standard views first
+        selected_items = self.view_list.selectedItems()
+        if selected_items:
+            view_name = selected_items[0].data(QtCore.Qt.UserRole)
+            for name, method, _ in self.standard_views:
+                if name == view_name:
+                    return ("standard", method, view_name)
+        
+        # Check specialized views
+        selected_items = self.specialized_list.selectedItems()
+        if selected_items:
+            view_key = selected_items[0].data(QtCore.Qt.UserRole)
+            return ("specialized", view_key, view_key)
+        
+        # Default to isometric
+        return ("standard", "viewIsometric", "Isometric")
+    
+    def show_markers(self):
+        return self.markers_checkbox.isChecked()
+
+
+def load_parameters(boat, configuration):
+    """Load parameters from JSON files to get values for camera markers"""
+    params = {}
+    
+    # Load boat parameters
+    boat_file = os.path.join(repo_root, 'constants', 'boats', f'{boat}.json')
+    with open(boat_file, 'r') as f:
+        boat_params = json.load(f)
+        params.update(boat_params)
+    
+    # Load configuration parameters
+    config_file = os.path.join(repo_root, 'constants', 'configurations', f'{configuration}.json')
+    with open(config_file, 'r') as f:
+        config_params = json.load(f)
+        params.update(config_params)
+    
+    return params
+
+
+def create_camera_markers(params):
+    """Create semi-transparent pink spheres at camera positions"""
+    import Part
+    
+    doc = FreeCAD.ActiveDocument
+    if not doc:
+        return
+    
+    # Extract needed parameters
+    vaka_x_offset = params.get('vaka_x_offset', 0)
+    mast_height = params.get('mast_height', 3000)
+    freeboard = params.get('freeboard', 400)
+    
+    # Navigation marker in cabin
+    cabin_cam = doc.addObject("Part::Feature", "Cabin_Cam")
+    cabin_cam.Shape = Part.makeSphere(10)
+    cabin_cam.Placement = FreeCAD.Placement(
+        FreeCAD.Base.Vector(vaka_x_offset, 0, 600),
+        FreeCAD.Rotation(FreeCAD.Base.Vector(0, 0, 0), 0)
+    )
+    cabin_cam.ViewObject.Transparency = 80
+    cabin_cam.ViewObject.ShapeColor = (1.0, 0.0, 0.0)  # Pink/red
+    
+    # Navigation marker on deck
+    deck_cam = doc.addObject("Part::Feature", "Deck_Cam")
+    deck_cam.Shape = Part.makeSphere(10)
+    deck_cam.Placement = FreeCAD.Placement(
+        FreeCAD.Base.Vector(vaka_x_offset, 0, 1700),
+        FreeCAD.Rotation(FreeCAD.Base.Vector(0, 0, 0), 0)
+    )
+    deck_cam.ViewObject.Transparency = 80
+    deck_cam.ViewObject.ShapeColor = (1.0, 0.0, 0.0)
+    
+    # Navigation marker at mast top
+    mast_cam = doc.addObject("Part::Feature", "Mast_Cam")
+    mast_cam.Shape = Part.makeSphere(10)
+    mast_cam.Placement = FreeCAD.Placement(
+        FreeCAD.Base.Vector(vaka_x_offset, 0, mast_height),
+        FreeCAD.Rotation(FreeCAD.Base.Vector(0, 0, 0), 0)
+    )
+    mast_cam.ViewObject.Transparency = 80
+    mast_cam.ViewObject.ShapeColor = (1.0, 0.0, 0.0)
+    
+    # Navigation marker below panels
+    below_cam = doc.addObject("Part::Feature", "Below_Cam")
+    below_cam.Shape = Part.makeSphere(10)
+    below_cam.Placement = FreeCAD.Placement(
+        FreeCAD.Base.Vector(vaka_x_offset - 1500, 0, 600),
+        FreeCAD.Rotation(FreeCAD.Base.Vector(0, 0, 0), 0)
+    )
+    below_cam.ViewObject.Transparency = 80
+    below_cam.ViewObject.ShapeColor = (1.0, 0.0, 0.0)
+    
+    doc.recompute()
+    print("✓ Created camera markers")
+
+
+def apply_view(view_type, view_method, params):
+    """Apply the selected view using parameters from JSON"""
+    view = FreeCADGui.ActiveDocument.ActiveView
+    
+    # Extract needed parameters
+    vaka_x_offset = params.get('vaka_x_offset', 0)
+    mast_height = params.get('mast_height', 3000)
+    freeboard = params.get('freeboard', 400)
+    
+    if view_type == "standard":
+        # Use standard FreeCAD view
+        method = getattr(view, view_method)
+        method()
+        view.fitAll()
+    
+    elif view_type == "specialized":
+        # Use specialized views with parameters
+        if view_method == "interior":
+            view.setCameraType("Perspective")
+            view.setViewDirection((0.26164761185646057, 0.9641122221946716, 0.04503464326262474))
+            view.viewPosition(FreeCAD.Placement(
+                FreeCAD.Base.Vector(vaka_x_offset, -347.47, 574.482),
+                FreeCAD.Rotation(-15.0776, 0.0, 90)
+            ))
+        
+        elif view_method == "cockpit":
+            view.setCameraType("Perspective")
+            view.setViewDirection((0.26164761185646057, 0.9641122221946716, 0.04503464326262474))
+            view.viewPosition(FreeCAD.Placement(
+                FreeCAD.Base.Vector(vaka_x_offset, -347.47, 1700),
+                FreeCAD.Rotation(-15.0776, 0.0, 90)
+            ))
+        
+        elif view_method == "mast":
+            view.setCameraType("Perspective")
+            view.setViewDirection((0.26164761185646057, 0.9641122221946716, 0.04503464326262474))
+            view.viewPosition(FreeCAD.Placement(
+                FreeCAD.Base.Vector(vaka_x_offset, -347.47, mast_height),
+                FreeCAD.Rotation(-15.0776, 0.0, 90)
+            ))
+        
+        elif view_method == "below":
+            view.setCameraType("Perspective")
+            view.setViewDirection((0.26164761185646057, 0.9641122221946716, 0.04503464326262474))
+            view.viewPosition(FreeCAD.Placement(
+                FreeCAD.Base.Vector(vaka_x_offset - 1500, -350.0, freeboard / 2),
+                FreeCAD.Rotation(-15.0776, 0.0, 90)
+            ))
+        
+        elif view_method == "sail":
+            view.setCameraType("Perspective")
+            view.setViewDirection((-0.778121292591095, 0.6084865927696228, -0.15579243004322052))
+            view.viewPosition(FreeCAD.Placement(
+                FreeCAD.Base.Vector(14120.5, -9740.7, 6543.77),
+                FreeCAD.Rotation(52.0205, -0.289763, 81.0371)
+            ))
+
+
+# Show dialog
+dialog = DesignViewDialog()
+if dialog.exec_() != QtGui.QDialog.Accepted:
+    print("Design generation cancelled")
+    sys.exit(0)
+
+boat = dialog.get_boat()
+configuration = dialog.get_configuration()
+view_type, view_method, view_name = dialog.get_selected_view()
+show_markers = dialog.show_markers()
+
+print(f"\nGenerating colored design via Makefile:")
 print(f"  Boat: {boat}")
 print(f"  Configuration: {configuration}")
+print(f"  View: {view_name}")
+
+# Load parameters for camera markers and view positioning
+params = load_parameters(boat, configuration)
 
 # Change to repo directory and run make
 os.chdir(repo_root)
@@ -122,77 +358,47 @@ os.chdir(repo_root)
 # Try to find make in common locations
 make_cmd = 'make'
 if platform.system() == 'Darwin':
-    # On macOS, try common locations
     for possible_make in ['/usr/bin/make', '/opt/homebrew/bin/make', '/usr/local/bin/make']:
         if os.path.exists(possible_make):
             make_cmd = possible_make
             print(f"Found make at: {make_cmd}")
             break
 
-# On macOS, skip visibility fix in make since we'll do it after opening
+# Clean Python environment variables
 make_env = os.environ.copy()
-
-# Clean Python environment variables that conflict with system Python
-# FreeCAD sets these for its embedded Python, but they break system Python
-python_vars_to_remove = [
-    'PYTHONHOME',
-    'PYTHONPATH',
-    'PYTHONEXECUTABLE',
-]
+python_vars_to_remove = ['PYTHONHOME', 'PYTHONPATH', 'PYTHONEXECUTABLE']
 for var in python_vars_to_remove:
     make_env.pop(var, None)
 
-print(f"Running: {make_cmd} design BOAT={boat} CONFIGURATION={configuration}")
+# Generate the COLORED design (not just design)
+print(f"Running: {make_cmd} color BOAT={boat} CONFIGURATION={configuration}")
 
 try:
     result = subprocess.run(
-        [make_cmd, 'design', f'BOAT={boat}', f'CONFIGURATION={configuration}'],
+        [make_cmd, 'color', f'BOAT={boat}', f'CONFIGURATION={configuration}'],
         capture_output=True,
         text=True,
         encoding='utf-8',
-        errors='replace',  # Replace non-decodable characters instead of failing
+        errors='replace',
         env=make_env
     )
 except FileNotFoundError as e:
-    # Construct platform-specific installation instructions
     if platform.system() == 'Darwin':
         install_instructions = "Please install Xcode Command Line Tools:\n  xcode-select --install"
     elif platform.system() == 'Linux':
-        install_instructions = "Please install make using your package manager:\n  sudo apt-get install build-essential  # Debian/Ubuntu\n  sudo yum groupinstall 'Development Tools'  # RHEL/CentOS"
+        install_instructions = "Please install make:\n  sudo apt-get install build-essential"
     else:
         install_instructions = "Please install GNU Make for your platform"
     
-    readme_url = "https://github.com/solar-proa/CAD"
-    
-    error_msg = (
-        f"Make command not found: {make_cmd}\n\n"
-        f"{install_instructions}\n\n"
-        f"For detailed installation instructions, see:\n{readme_url}"
-    )
-    
+    error_msg = f"Make command not found: {make_cmd}\n\n{install_instructions}"
     print(f"\n✗ ERROR: {error_msg}")
     
-    if FreeCAD.GuiUp:
-        # Create a custom message box with a clickable link
-        msg_box = QtGui.QMessageBox()
-        msg_box.setIcon(QtGui.QMessageBox.Critical)
-        msg_box.setWindowTitle("Make Not Found")
-        msg_box.setText(f"Make command not found: {make_cmd}")
-        msg_box.setInformativeText(install_instructions)
-        
-        # Add clickable link to README
-        msg_box.setDetailedText(f"For detailed instructions, visit:\n{readme_url}")
-        
-        # Create a clickable label for the README link
-        link_label = QtGui.QLabel(f'<a href="{readme_url}">View installation guide (README)</a>')
-        link_label.setOpenExternalLinks(True)
-        link_label.setTextFormat(QtCore.Qt.RichText)
-        link_label.setTextInteractionFlags(QtCore.Qt.TextBrowserInteraction)
-        
-        # Add the link to the message box
-        msg_box.layout().addWidget(link_label, 2, 1)
-        
-        msg_box.exec_()
+    msg_box = QtGui.QMessageBox()
+    msg_box.setIcon(QtGui.QMessageBox.Critical)
+    msg_box.setWindowTitle("Make Not Found")
+    msg_box.setText(f"Make command not found: {make_cmd}")
+    msg_box.setInformativeText(install_instructions)
+    msg_box.exec_()
     sys.exit(1)
 
 print("\n" + "="*60)
@@ -204,40 +410,45 @@ if result.stderr:
 print("="*60)
 
 if result.returncode == 0:
-    design_file = os.path.join(repo_root, 'artifacts', f'{boat}.{configuration}.design.FCStd')
+    # Look for the COLORED design file
+    design_file = os.path.join(repo_root, 'artifacts', f'{boat}.{configuration}.color.FCStd')
+    
     if os.path.exists(design_file):
-        print(f"\n✓ Design complete!")
+        print(f"\n✓ Colored design complete!")
         print(f"  File: {design_file}")
         
-        if FreeCAD.GuiUp:
-            # Close all existing documents
-            for doc in FreeCAD.listDocuments().values():
-                FreeCAD.closeDocument(doc.Name)
-            
-            # Open the new design
-            FreeCAD.openDocument(design_file)
-            
-            # Set a good view
-            import FreeCADGui
-            FreeCADGui.activeDocument().activeView().viewIsometric()
-            FreeCADGui.SendMsgToActiveView("ViewFit")
-            
-            print("✓ Design opened in FreeCAD")
+        # Close all existing documents
+        for doc in FreeCAD.listDocuments().values():
+            FreeCAD.closeDocument(doc.Name)
+        
+        # Open the colored design
+        FreeCAD.openDocument(design_file)
+        
+        # Create camera markers if requested
+        if show_markers:
+            create_camera_markers(params)
+        
+        # Apply the selected view
+        apply_view(view_type, view_method, params)
+        
+        print(f"✓ Design opened with {view_name} view")
+        
     else:
-        print(f"\n✗ Design file not found: {design_file}")
-        if FreeCAD.GuiUp:
-            QtGui.QMessageBox.warning(None, "Error", f"Design file not found:\n{design_file}")
+        print(f"\n✗ Colored design file not found: {design_file}")
+        QtGui.QMessageBox.warning(
+            None, 
+            "Error", 
+            f"Colored design file not found:\n{design_file}\n\n"
+            "The color step may have failed. Check the make output above."
+        )
 else:
     print(f"\n✗ Make failed with return code {result.returncode}")
     error_output = result.stdout + "\n" + result.stderr if result.stderr else result.stdout
-    # Show last 500 chars of output
     error_summary = error_output[-500:] if len(error_output) > 500 else error_output
-    if FreeCAD.GuiUp:
-        QtGui.QMessageBox.critical(
-            None, 
-            "Design Generation Failed", 
-            f"Make failed with return code {result.returncode}\n\n"
-            f"Error output:\n{error_summary}\n\n"
-            f"Check the Report View for full details."
-        )
-
+    QtGui.QMessageBox.critical(
+        None,
+        "Design Generation Failed",
+        f"Make failed with return code {result.returncode}\n\n"
+        f"Error output:\n{error_summary}\n\n"
+        f"Check the Report View for full details."
+    )

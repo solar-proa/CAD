@@ -3,6 +3,7 @@
   "configuration_name": "closehaulreefed",
   
   "required": [
+    "render"
   ],
   
   "sail_camber_biru": 5000,

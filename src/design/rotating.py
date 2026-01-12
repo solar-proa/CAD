@@ -239,8 +239,7 @@ def rudder(the_rudder, params, raised):
     tiller_b.Shape = tiller_b.Shape.cut(tiller_cutter_box_shape)
 
     # steel ribs (rods) for rudder
-    rib_spacing = (params['rudder_blade_height'] - 2
-                   * params['rudder_rim']
+    rib_spacing = ((params['rudder_blade_height'] - 2 * params['rudder_rim'])
                    / (params['rudder_ribs'] - 1))
     for i in range(0, params['rudder_ribs']):
         rib = the_rudder.newObject("Part::Feature", f"Rudder_Rib_{i} (steel)")

@@ -2,12 +2,12 @@
   "boat_description": "Base parameters for RP2",
   "boat_name": "rp2",
   
-  "panels_longitudinal": 6,
-  "panels_transversal": 2,
+  "panels_longitudinal": 2,
+  "panels_transversal": 4,
   "deck_stringers": 4,
   
-  "panel_length": 1762,
-  "panel_width": 1134,
+  "panel_length": 1134,
+  "panel_width": 2382,
   "panel_height": 4,
   
   "deck_width": 2000,
@@ -35,7 +35,7 @@
   "sole_thickness": 9,
   "bottom_height_inches": 8,
   
-  "crossdeck_width": 900,
+  "crossdeck_width": 1500,
   
   "gunwale_width_inches": 3,
   "gunwale_height_inches": 2,

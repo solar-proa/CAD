@@ -100,7 +100,7 @@ The vessel can be configured for different sailing conditions and use cases:
     <div>
       <img src="{{ file.path | relative_url }}" alt="{{ file.basename }}" style="width: 100%; border: 1px solid #ddd; border-radius: 4px;">
       <p style="text-align: center; font-size: 0.9em; color: #666; margin-top: 0.5em;">
-        {{ file.basename | remove: "rp2." | remove: config | remove: ".render." | remove: "_" | replace: "front", "Front View" | replace: "isometric", "Isometric View" | replace: "right", "Right View" | replace: "top", "Top View" }}
+        {{ file.basename | remove: "rp2." | remove: config | remove: ".render." | remove: "_" | replace: "front", "Back View" | replace: "isometric", "Isometric View" | replace: "right", "Right View" | replace: "top", "Top View" }}
       </p>
     </div>
   {% endfor %}
