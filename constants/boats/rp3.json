@@ -1,6 +1,6 @@
 {
-  "boat_description": "Base parameters for RP2 - only independent values",
-  "boat_name": "rp2",
+  "boat_description": "Base parameters for RP3 - only independent values",
+  "boat_name": "rp3",
   
   "panels_longitudinal": 6,
   "panels_transversal": 3,

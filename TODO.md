@@ -10,6 +10,4 @@
   when we have 1 panel in longitudinal direction on each side, there would
   be 2 akas on each side, which will be better for the rudder mounting and
   overall design.
-- Rendering says: WARNING: Only 0 of 4 images created
-  but the renderings are getting created
 
