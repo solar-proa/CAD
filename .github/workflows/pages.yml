@@ -112,6 +112,15 @@ jobs:
           else
             echo "WARNING: No FCStd files found in artifacts/"
           fi
+
+      - name: Copy STEP models to docs/downloads folder
+        run: |
+          if ls artifacts/*.step 1> /dev/null 2>&1; then
+            cp artifacts/*.step docs/downloads/
+            echo "Copied $(ls artifacts/*.step | wc -l) STEP files"
+          else
+            echo "WARNING: No STEP files found in artifacts/"
+          fi
       
       - name: Verify files before Jekyll build
         run: |
