@@ -51,7 +51,7 @@ def generate_downloads_yaml(boat, config_dir, artifacts_dir, output_path):
             description = get_configuration_description(config_dir, config_name)
 
             # Check if STEP file exists
-            step_filename = f'{boat}.{config_name}.step'
+            step_filename = f'{boat}.{config_name}.step.step'
             step_path = os.path.join(artifacts_dir, step_filename)
             has_step = os.path.exists(step_path)
 

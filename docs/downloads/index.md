@@ -90,7 +90,7 @@ CAD files for all boat configurations in FreeCAD (`.FCStd`) and STEP (`.step`) f
 ## File Naming Convention
 
 - **FreeCAD**: `{boat}.{configuration}.color.FCStd`
-- **STEP**: `{boat}.{configuration}.step`
+- **STEP**: `{boat}.{configuration}.step.step`
 
 Where:
 - **boat**: `rp1`, `rp2`, `rp3` (Roti Proa models 1, 2, 3)

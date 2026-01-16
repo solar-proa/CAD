@@ -45,7 +45,7 @@ DESIGN_DIR := $(SRC_DIR)/design
 COLOR_DIR := $(SRC_DIR)/color
 MASS_DIR := $(SRC_DIR)/mass
 RENDER_DIR := $(SRC_DIR)/render
-EXPORT_DIR := $(SRC_DIR)/export
+STEP_DIR := $(SRC_DIR)/step
 
 # Source files (for dependency tracking)
 PARAMETERS_SOURCES := $(wildcard $(PARAMETERS_DIR)/*.py)
@@ -53,7 +53,7 @@ DESIGN_SOURCES := $(wildcard $(DESIGN_DIR)/*.py)
 COLOR_SOURCES := $(wildcard $(COLOR_DIR)/*.py)
 MASS_SOURCES := $(wildcard $(MASS_DIR)/*.py)
 RENDER_SOURCES := $(wildcard $(RENDER_DIR)/*.py)
-EXPORT_SOURCES := $(wildcard $(EXPORT_DIR)/*.py) $(wildcard $(EXPORT_DIR)/*.sh)
+STEP_SOURCES := $(wildcard $(STEP_DIR)/*.py) $(wildcard $(STEP_DIR)/*.sh)
 
 # ==============================================================================
 # AUTO-DISCOVERY: Find all boats and configurations
@@ -85,15 +85,14 @@ PARAMETERS_ARTIFACT := $(ARTIFACTS_DIR)/$(BOAT).$(CONFIGURATION).parameters.json
 DESIGN_ARTIFACT := $(ARTIFACTS_DIR)/$(BOAT).$(CONFIGURATION).design.FCStd
 COLOR_ARTIFACT := $(ARTIFACTS_DIR)/$(BOAT).$(CONFIGURATION).color.FCStd
 MASS_ARTIFACT := $(ARTIFACTS_DIR)/$(BOAT).$(CONFIGURATION).mass.json
-STEP_ARTIFACT := $(ARTIFACTS_DIR)/$(BOAT).$(CONFIGURATION).step
+STEP_ARTIFACT := $(ARTIFACTS_DIR)/$(BOAT).$(CONFIGURATION).step.step
 JEKYLL_DATA := $(DOCS_DATA_DIR)/$(BOAT).$(CONFIGURATION).json
 
 # ==============================================================================
 # PHONY TARGETS
 # ==============================================================================
 
-.PHONY: all help clean check
-.PHONY: jekyll design-all parameters-all color-all render-all step-all
+.PHONY: all help clean check jekyll 
 
 # ==============================================================================
 # MAIN TARGETS
@@ -113,17 +112,12 @@ help:
 	@echo "  make required-all           - Run all required stages for all boats and configurations"
 	@echo "                                Required stages are specified in constants/configurations"
 	@echo "  make design                 - Generate single design (BOAT=$(BOAT) CONFIGURATION=$(CONFIGURATION))"
-	@echo "  make design-all             - Generate all boat+configuration combinations"
 	@echo "  make color                  - Apply color scheme to design (MATERIALS=$(MATERIALS))"
-	@echo "  make color-all              - Apply color scheme to all existing designs"
 	@echo "  make step                   - Export design to STEP format (geometry only)"
-	@echo "  make step-all               - Export all designs to STEP format"
 	@echo "  make render                 - Render images (applies colors then renders)"
-	@echo "  make render-all             - Render all existing colored designs"
 	@echo ""
 	@echo "Parameter Targets:"
 	@echo "  make parameters             - Compute and save parameters to artifacts/"
-	@echo "  make parameters-all         - Generate all boat+configuration parameters"
 	@echo ""
 	@echo "Utility Targets:"
 	@echo "  make clean                  - Remove all generated files"
@@ -154,18 +148,6 @@ $(PARAMETERS_ARTIFACT): $(BOAT_FILE) $(CONFIGURATION_FILE) $(PARAMETERS_SOURCES)
 
 parameters: $(PARAMETERS_ARTIFACT)
 
-# Compute and save parameters for all boat+configuration combinations
-parameters-all:
-	@echo "Generating all parameter files..."
-	@for boat in $(BOATS); do \
-		for configuration in $(CONFIGURATIONS); do \
-			echo ""; \
-			$(MAKE) parameters BOAT=$$boat CONFIGURATION=$$configuration || true; \
-		done \
-	done
-	@echo ""
-	@echo "✓ All designs complete!"
-
 # ==============================================================================
 # DESIGN GENERATION
 # ==============================================================================
@@ -191,18 +173,6 @@ $(DESIGN_ARTIFACT): $(PARAMETERS_ARTIFACT) $(DESIGN_SOURCES) | $(DESIGN_DIR)
 	fi
 
 design: $(DESIGN_ARTIFACT)
-
-# Generate the designs for all boat+configuration combinations
-design-all:
-	@echo "Generating all designs..."
-	@for boat in $(BOATS); do \
-		for configuration in $(CONFIGURATIONS); do \
-			echo ""; \
-			$(MAKE) design BOAT=$$boat CONFIGURATION=$$configuration || true; \
-		done \
-	done
-	@echo ""
-	@echo "✓ All designs complete!"
 
 # Apply color scheme to design
 $(COLOR_ARTIFACT): $(DESIGN_ARTIFACT) $(MATERIALS_FILE) $(COLOR_SOURCES) | $(COLOR_DIR)
@@ -231,22 +201,6 @@ $(COLOR_ARTIFACT): $(DESIGN_ARTIFACT) $(MATERIALS_FILE) $(COLOR_SOURCES) | $(COL
 color: $(COLOR_ARTIFACT)
 	@echo "✓ Color scheme '$(MATERIALS)' applied to $(BOAT).$(CONFIGURATION)"
 
-# Apply colors to all designs
-.PHONY: color-all
-color-all:
-	@echo "Applying colors to all existing designs..."
-	@for design in $(ARTIFACTS_DIR)/*.design.FCStd; do \
-		if [ -f "$$design" ]; then \
-			base=$$(basename "$$design" .design.FCStd); \
-			boat=$$(echo "$$base" | cut -d'.' -f1); \
-			configuration=$$(echo "$$base" | cut -d'.' -f2); \
-			echo ""; \
-			$(MAKE) color BOAT=$$boat CONFIGURATION=$$configuration MATERIALS=$(MATERIALS) || true; \
-		fi \
-	done
-	@echo ""
-	@echo "✓ All designs colored!"
-
 # Mass analysis (depends on design, not colors - mass is geometry-based)
 $(MASS_ARTIFACT): $(DESIGN_ARTIFACT) $(MATERIALS_FILE) $(MASS_SOURCES) | $(ARTIFACTS_DIR)
 	@echo "Running mass analysis: $(BOAT).$(CONFIGURATION)"
@@ -262,22 +216,6 @@ $(MASS_ARTIFACT): $(DESIGN_ARTIFACT) $(MATERIALS_FILE) $(MASS_SOURCES) | $(ARTIF
 .PHONY: mass
 mass: $(MASS_ARTIFACT)
 	@echo "✓ mass calculation applied to $(BOAT).$(CONFIGURATION)"
-
-# Apply mass to all designs
-.PHONY: mass-all
-mass-all:
-	@echo "Applying mass calculation to all existing designs..."
-	@for design in $(ARTIFACTS_DIR)/*.design.FCStd; do \
-		if [ -f "$$design" ]; then \
-			base=$$(basename "$$design" .design.FCStd); \
-			boat=$$(echo "$$base" | cut -d'.' -f1); \
-			configuration=$$(echo "$$base" | cut -d'.' -f2); \
-			echo ""; \
-			$(MAKE) mass BOAT=$$boat CONFIGURATION=$$configuration MATERIALS=$(MATERIALS) || true; \
-		fi \
-	done
-	@echo ""
-	@echo "✓ All designs colored!"
 
 # Render images from colored FCStd file
 .PHONY: render
@@ -301,31 +239,16 @@ render: $(COLOR_ARTIFACT) $(RENDER_SOURCES)
 	fi
 	@echo "Render complete!"
 
-# Render images from all existing FCStd files
-.PHONY: render-all
-render-all: $(RENDER_SOURCES)
-	@echo "Rendering images from all existing designs..."
-	@for fcstd in $(ARTIFACTS_DIR)/*.FCStd; do \
-		if [ -f "$$fcstd" ]; then \
-			base=$$(basename "$$fcstd" .FCStd); \
-			boat=$$(echo "$$base" | cut -d'.' -f1); \
-			config=$$(echo "$$base" | cut -d'.' -f2); \
-			echo "Processing $$boat $$config..."; \
-			$(MAKE) render BOAT=$$boat CONFIGURATION=$$config || true; \
-		fi \
-	done
-	@echo "All renders complete!"
-
 # Export to STEP format (geometry only, no colors)
-$(STEP_ARTIFACT): $(DESIGN_ARTIFACT) $(EXPORT_SOURCES) | $(ARTIFACTS_DIR)
+$(STEP_ARTIFACT): $(DESIGN_ARTIFACT) $(STEP_SOURCES) | $(ARTIFACTS_DIR)
 	@echo "Exporting STEP: $(BOAT).$(CONFIGURATION)"
 	@if [ "$(UNAME)" = "Darwin" ]; then \
-		bash $(EXPORT_DIR)/step_mac.sh \
+		bash $(STEP_DIR)/step_mac.sh \
 			"$(DESIGN_ARTIFACT)" \
 			"$(STEP_ARTIFACT)" \
 			"$(FREECAD_APP)"; \
 	else \
-		$(FREECAD_PYTHON) $(EXPORT_DIR)/step.py \
+		$(FREECAD_PYTHON) $(STEP_DIR)/step.py \
 			--input "$(DESIGN_ARTIFACT)" \
 			--output "$(STEP_ARTIFACT)"; \
 	fi
@@ -335,22 +258,6 @@ $(STEP_ARTIFACT): $(DESIGN_ARTIFACT) $(EXPORT_SOURCES) | $(ARTIFACTS_DIR)
 .PHONY: step
 step: $(STEP_ARTIFACT)
 	@echo "✓ STEP export complete for $(BOAT).$(CONFIGURATION)"
-
-# Export all designs to STEP
-.PHONY: step-all
-step-all:
-	@echo "Exporting all designs to STEP..."
-	@for design in $(ARTIFACTS_DIR)/*.design.FCStd; do \
-		if [ -f "$$design" ]; then \
-			base=$$(basename "$$design" .design.FCStd); \
-			boat=$$(echo "$$base" | cut -d'.' -f1); \
-			configuration=$$(echo "$$base" | cut -d'.' -f2); \
-			echo ""; \
-			$(MAKE) step BOAT=$$boat CONFIGURATION=$$configuration || true; \
-		fi \
-	done
-	@echo ""
-	@echo "✓ All STEP exports complete!"
 
 # "Required" target: look in the appropriate configuration file what stages need to run and run them
 .PHONY: required

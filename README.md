@@ -69,7 +69,7 @@ make step BOAT=rp2 CONFIG=closehaul
 The generated files are placed in the folder `artifacts`, for example:
 ```
 artifacts/rp2.closehaul.design.FCStd
-artifacts/rp2.closehaul.step
+artifacts/rp2.closehaul.step.step
 ```
 
 ## Continuous Integration/Continuous Deployment (CICD)
