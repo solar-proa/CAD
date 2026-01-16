@@ -40,6 +40,7 @@ The build process transforms parameter files into website-ready outputs through 
 | **design** | Parameters | FreeCAD model (.FCStd) | Builds the 3D geometry from parameters |
 | **mass** | FreeCAD model | Mass properties JSON | Calculates volumes, masses, and buoyancy |
 | **color** | FreeCAD model | Colored model | Applies materials and colors for rendering |
+| **buoyancy** | Design (FreeCAD), Mass properties | Buoyancy properties | Analyzes buoyancy using Newton's method |
 | **render** | Colored model | PNG images | Generates isometric, top, front, right views |
 | **step** | FreeCAD model | STEP file | Exports universal CAD format |
 
@@ -98,11 +99,7 @@ CAD/
 │   ├── configuration/  # Sailing configurations
 │   └── material/       # Material properties (density, color)
 ├── src/
-<<<<<<< HEAD
-│   ├── parameter/      # Parameter merging logic
-=======
-│   ├── parameters/     # Parameter merging logic
->>>>>>> 5ec7cc0 (Add technical page and systematic configuration display names)
+│   ├── parameter/     # Parameter merging logic
 │   ├── design/         # FreeCAD model builders
 │   ├── mass/           # Mass calculation scripts
 │   ├── color/          # Material application
@@ -133,11 +130,7 @@ The entire project is open source under permissive licenses:
 - **CAD Models:** [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
 - **Code:** MIT License
 
-<<<<<<< HEAD
-**GitHub Repository:** [github.com/solar-proa/CAD](https://github.com/solar-proa/CAD)
-=======
 **GitHub Repository:** [github.com/henz/SolarProa](https://github.com/henz/SolarProa)
->>>>>>> 5ec7cc0 (Add technical page and systematic configuration display names)
 
 Contributions, feedback, and forks are welcome.
 

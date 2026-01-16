@@ -94,9 +94,6 @@ jobs:
           python3 -m src.validate_structure.diagrams
 
       - name: Copy constant files to docs/_data
-=======
-      - name: Copy data files to docs folder
->>>>>>> 5ec7cc0 (Add technical page and systematic configuration display names)
         run: |
           mkdir -p docs/_data
           cp constant/view.json docs/_data/
