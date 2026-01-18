@@ -16,6 +16,7 @@
   "ama_diameter": 300,
   "ama_thickness": 8,
   "ama_length": 4200,
+  "ama_cone_length": 500,
   
   "stringer_width_inches": 1,
   "stringer_thickness": 3,

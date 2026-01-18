@@ -16,6 +16,7 @@
   "ama_diameter": 370,
   "ama_thickness": 10,
   "ama_length": 9300,
+  "ama_cone_length": 1250,
   
   "stringer_width_inches": 1,
   "stringer_thickness": 3,
@@ -84,7 +85,8 @@
   
   "boom_diameter": 63.5,
   "boom_thickness": 2.8,
-
+  "boom_length": 5500,
+  
   "sail_height": 5500,
   "sail_width": 5500,
   "sail_thickness": 2,

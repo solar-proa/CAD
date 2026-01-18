@@ -97,10 +97,6 @@ def compute_derived(base: Dict[str, Any]) -> Dict[str, Any]:
         last_aka_y = (base['crossdeck_width'] / 2
                       + last_panel_index * base['panel_width']
                       + base['aka_rim'] + last_aka_index * aka_spacing)
-    # Outer edge of outermost pillar
-    outer_pillar_edge_y = last_aka_y + params['pillar_width'] / 2
-    # Cone length = (ama_length - cylinder_length) / 2
-    params['ama_cone_length'] = (base['ama_length'] / 2 - outer_pillar_edge_y)
     
     # Vaka x offset (distance from ama centerline to vaka centerline)
     params['vaka_x_offset'] = (- params['pillar_width'] / 2
