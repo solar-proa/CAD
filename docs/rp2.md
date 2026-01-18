@@ -82,7 +82,29 @@ see [implementation](https://github.com/solar-proa/CAD/blob/main/src/buoyancy/__
 **Ama submerged percentage:** {{ site.data.rp2_beaching_buoyancy.ama.submerged_percent }} %  
 **Ama z-offset:** {{ site.data.rp2_beaching_buoyancy.ama.z_world_mm }} mm  
 **Center of gravity (world-coordinates x, y, z):** {{ site.data.rp2_beaching_buoyancy.center_of_gravity_world.x }}, {{ site.data.rp2_beaching_buoyancy.center_of_gravity_world.y }}, {{ site.data.rp2_beaching_buoyancy.center_of_gravity_world.z }} mm  
-**Center of buoyancy (world-coordinates x, y, z):** {{ site.data.rp2_beaching_buoyancy.center_of_buoyancy.x }}, {{ site.data.rp2_beaching_buoyancy.center_of_buoyancy.y }}, {{ site.data.rp2_beaching_buoyancy.center_of_buoyancy.z }} mm  
+**Center of buoyancy (world-coordinates x, y, z):** {{ site.data.rp2_beaching_buoyancy.center_of_buoyancy.x }}, {{ site.data.rp2_beaching_buoyancy.center_of_buoyancy.y }}, {{ site.data.rp2_beaching_buoyancy.center_of_buoyancy.z }} mm
+
+---
+
+## Stability analysis
+
+The GZ curve (righting arm curve) shows how the boat's stability varies with heel angle. For each heel angle, we compute the equilibrium waterline (where buoyancy equals weight) and measure the horizontal distance between the center of buoyancy (CoB) and center of gravity (CoG). This distance—the righting arm GZ—multiplied by displacement gives the righting moment that returns the boat to equilibrium.
+
+<div style="max-width: 800px; margin: 2em auto;">
+  <img src="{{ '/renders/rp2.beaching.gz.png' | relative_url }}" alt="GZ Curve" style="width: 100%; border: 1px solid #ddd; border-radius: 4px;">
+</div>
+
+As a proa with an outrigger (ama), this vessel has asymmetric stability characteristics:
+
+**Towards ama (positive heel):** The ama provides substantial buoyancy leverage when submerged.
+- Maximum righting arm: {{ site.data.rp2_beaching_gz.summary.max_gz_m | times: 100 | round: 0 }} cm at {{ site.data.rp2_beaching_gz.summary.max_gz_angle_deg }}° heel
+- Turtle angle: {{ site.data.rp2_beaching_gz.summary.turtle_angle_deg }}° (ama driven under, boat inverts)
+
+**Away from ama (negative heel):** Stability comes from the elevated ama's weight acting as counterweight.
+- Capsize angle: {{ site.data.rp2_beaching_gz.summary.capsize_angle_deg }}° (boat rolls over, ama ends up on top)
+- Ama engagement: {{ site.data.rp2_beaching_gz.summary.ama_engagement_angle_deg }}° (ama touches water)
+
+Proas are sailed with the ama to windward. Wind force heels the boat away from the ama, lifting it to reduce drag ("flying the ama"). The operating envelope is typically -5° to -20° heel, well within the stable region. See [implementation](https://github.com/solar-proa/CAD/blob/main/src/gz/__main__.py).
 
 ---
 

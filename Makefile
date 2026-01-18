@@ -116,6 +116,8 @@ help:
 	@echo "  make color                  - Apply color scheme to design (MATERIAL=$(MATERIAL))"
 	@echo "  make step                   - Export design to STEP format (geometry only)"
 	@echo "  make render                 - Render images (applies colors then renders)"
+	@echo "  make buoyancy               - Run buoyancy equilibrium analysis"
+	@echo "  make gz                     - Compute GZ righting arm curve (JSON + PNG)"
 	@echo ""
 	@echo "Parameter Targets:"
 	@echo "  make parameter              - Compute and save parameter to artifacts/"
@@ -369,3 +371,34 @@ $(BUOYANCY_ARTIFACT): $(DESIGN_ARTIFACT) $(MASS_ARTIFACT) $(MATERIAL_FILE) $(BUO
 .PHONY: buoyancy
 buoyancy: $(BUOYANCY_ARTIFACT)
 	@echo "✓ Buoyancy analysis complete for $(BOAT).$(CONFIGURATION)"
+
+# ==============================================================================
+# GZ CURVE (RIGHTING ARM) ANALYSIS
+# ==============================================================================
+
+GZ_DIR := $(SRC_DIR)/gz
+GZ_SOURCE := $(wildcard $(GZ_DIR)/*.py) $(wildcard $(SRC_DIR)/physics/*.py)
+GZ_JSON_ARTIFACT := $(ARTIFACT_DIR)/$(BOAT).$(CONFIGURATION).gz.json
+GZ_PNG_ARTIFACT := $(ARTIFACT_DIR)/$(BOAT).$(CONFIGURATION).gz.png
+
+$(GZ_JSON_ARTIFACT): $(BUOYANCY_ARTIFACT) $(DESIGN_ARTIFACT) $(GZ_SOURCE) | $(ARTIFACT_DIR)
+	@echo "Computing GZ curve: $(BOAT).$(CONFIGURATION)"
+	@if [ "$(UNAME)" = "Darwin" ]; then \
+		PYTHONPATH=$(FREECAD_BUNDLE)/Contents/Resources/lib:$(FREECAD_BUNDLE)/Contents/Resources/Mod:$(PWD) \
+		DYLD_LIBRARY_PATH=$(FREECAD_BUNDLE)/Contents/Frameworks:$(FREECAD_BUNDLE)/Contents/Resources/lib \
+		$(FREECAD_PYTHON) -m src.gz \
+			--design $(DESIGN_ARTIFACT) \
+			--buoyancy $(BUOYANCY_ARTIFACT) \
+			--output $@ \
+			--output-png $(GZ_PNG_ARTIFACT); \
+	else \
+		PYTHONPATH=$(PWD) $(FREECAD_PYTHON) -m src.gz \
+			--design $(DESIGN_ARTIFACT) \
+			--buoyancy $(BUOYANCY_ARTIFACT) \
+			--output $@ \
+			--output-png $(GZ_PNG_ARTIFACT); \
+	fi
+
+.PHONY: gz
+gz: $(GZ_JSON_ARTIFACT)
+	@echo "✓ GZ curve analysis complete for $(BOAT).$(CONFIGURATION)"
