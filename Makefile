@@ -222,11 +222,7 @@ DESIGN_ARTIFACT := $(ARTIFACT_DIR)/$(BOAT).$(CONFIGURATION).design.FCStd
 $(DESIGN_ARTIFACT): $(PARAMETER_ARTIFACT) $(DESIGN_SOURCE) | $(DESIGN_DIR)
 	@echo "Generating design: $(BOAT).$(CONFIGURATION)"
 	@echo "  Parameters: $(PARAMETER_ARTIFACT)"
-	@if [ "$(UNAME)" = "Darwin" ]; then \
-		$(FREECAD_CMD) $(DESIGN_DIR)/main.py $(PARAMETER_ARTIFACT) $(DESIGN_ARTIFACT) || true; \
-	else \
-		PARAMS_PATH=$(PARAMETER_ARTIFACT) OUTPUT_PATH=$(DESIGN_ARTIFACT) $(FREECAD_CMD) $(DESIGN_DIR)/main.py || true; \
-	fi
+	@PARAMS_PATH=$(PARAMETER_ARTIFACT) OUTPUT_PATH=$(DESIGN_ARTIFACT) $(FREECAD_CMD) $(DESIGN_DIR)/main.py || true
 	@if [ -f "$(DESIGN_ARTIFACT)" ]; then \
 		echo "✓ Design complete: $(DESIGN_ARTIFACT)"; \
 		if [ "$(UNAME)" = "Darwin" ]; then \

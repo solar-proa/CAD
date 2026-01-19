@@ -109,7 +109,7 @@ if platform.system() == 'Linux' and not App.GuiUp:
         Gui.showMainWindow()
         Gui.getMainWindow().destroy()
         App.ParamGet('User parameter:BaseApp/Preferences/Document').SetBool('SaveThumbnail', False)
-        print("✓ Headless GUI initialized")
+        print("[ok] Headless GUI initialized")
     except Exception as e:
         print(f"Warning: Could not initialize headless GUI: {e}")
         print("ViewObject visibility may not work")
@@ -256,14 +256,14 @@ if platform.system() == 'Linux':
     
     try:
         make_all_visible(doc.Objects)
-        print(f"✓ Visibility set for {len(doc.Objects)} objects")
+        print(f"[ok] Visibility set for {len(doc.Objects)} objects")
     except Exception as e:
         print(f"Warning: Could not set visibility: {e}")
 
 # Save the document
 doc.saveAs(output_path)
 print(f"Saved document to {output_path}")
-print("✓ Design generation complete")
+print("Design generation complete")
 
 # Flush output and exit immediately to prevent FreeCAD from entering interactive mode
 sys.stdout.flush()
