@@ -115,6 +115,28 @@ Traditionally, proas are sailed with the ama to windward. The wind force heels t
 
 ---
 
+## Structural validation
+
+The vessel's structural integrity has been validated under multiple load scenarios including static loads, wave impacts, wind forces, and crane operations. All tests pass with safety factors exceeding the required minimum of 2.0.
+
+**[View Full Structural Safety Report →]({{ '/validation_rp2.html' | relative_url }})**
+
+| Test | Safety Factor | Result |
+|------|---------------|--------|
+| Suspended ama (aka bending) | {{ site.data.rp2_beaching_validate_structure.tests[0].summary.strong_axis.safety_factor }} | {{ site.data.rp2_beaching_validate_structure.tests[0].summary.strong_axis.result }} |
+| Aka point load (crew standing) | {{ site.data.rp2_beaching_validate_structure.tests[1].summary.safety_factor }} | {{ site.data.rp2_beaching_validate_structure.tests[1].summary.result }} |
+| One end supported (spine bending) | {{ site.data.rp2_beaching_validate_structure.tests[2].summary.safety_factor }} | {{ site.data.rp2_beaching_validate_structure.tests[2].summary.result }} |
+| Mast wind loading (25 knots) | {{ site.data.rp2_beaching_validate_structure.tests[3].summary.safety_factor }} | {{ site.data.rp2_beaching_validate_structure.tests[3].summary.result }} |
+| Diagonal braces (lateral) | {{ site.data.rp2_beaching_validate_structure.tests[4].summary.min_safety_factor }} | {{ site.data.rp2_beaching_validate_structure.tests[4].summary.result }} |
+| Wave slam (vertical) | {{ site.data.rp2_beaching_validate_structure.tests[5].summary.min_safety_factor }} | {{ site.data.rp2_beaching_validate_structure.tests[5].summary.result }} |
+| Frontal wave slam | {{ site.data.rp2_beaching_validate_structure.tests[6].summary.min_safety_factor }} | {{ site.data.rp2_beaching_validate_structure.tests[6].summary.result }} |
+| Sideways wave slam | {{ site.data.rp2_beaching_validate_structure.tests[7].summary.min_safety_factor }} | {{ site.data.rp2_beaching_validate_structure.tests[7].summary.result }} |
+| Lifting sling (crane) | {{ site.data.rp2_beaching_validate_structure.tests[8].summary.min_safety_factor }} | {{ site.data.rp2_beaching_validate_structure.tests[8].summary.result }} |
+| Gunwale loads | {{ site.data.rp2_beaching_validate_structure.tests[9].summary.min_safety_factor }} | {{ site.data.rp2_beaching_validate_structure.tests[9].summary.result }} |
+| Ama lift wind speed | {{ site.data.rp2_beaching_validate_structure.tests[10].summary.ama_lift_windspeed_knots }} knots | INFO |
+
+---
+
 ## Configurations
 
 The vessel can be configured for different sailing conditions and use cases:

@@ -170,9 +170,42 @@ check:
 	@echo ""
 	@echo "System ready!"
 
+# copy artifacts to docs folders for local preview
+.PHONY: sync-docs
+sync-docs:
+	@echo "Syncing artifacts to docs folders..."
+	@mkdir -p docs/_data docs/renders docs/downloads
+	@# Copy JSON files with dots→underscores renaming
+	@for file in artifact/*.json; do \
+		if [ -f "$$file" ]; then \
+			basename=$$(basename "$$file" .json); \
+			newname=$$(echo "$$basename" | tr '.' '_'); \
+			cp "$$file" "docs/_data/$${newname}.json"; \
+		fi \
+	done
+	@echo "  Copied $$(ls artifact/*.json 2>/dev/null | wc -l | tr -d ' ') JSON files to docs/_data/"
+	@# Copy PNG renders
+	@if ls artifact/*.png 1>/dev/null 2>&1; then \
+		cp artifact/*.png docs/renders/; \
+		echo "  Copied $$(ls artifact/*.png | wc -l | tr -d ' ') PNG files to docs/renders/"; \
+	fi
+	@# Copy downloads
+	@if ls artifact/*.FCStd 1>/dev/null 2>&1; then \
+		cp artifact/*.FCStd docs/downloads/; \
+		echo "  Copied $$(ls artifact/*.FCStd | wc -l | tr -d ' ') FCStd files to docs/downloads/"; \
+	fi
+	@if ls artifact/*.step.step 1>/dev/null 2>&1; then \
+		cp artifact/*.step.step docs/downloads/; \
+		echo "  Copied $$(ls artifact/*.step.step | wc -l | tr -d ' ') STEP files to docs/downloads/"; \
+	fi
+	@# Generate YAML files if scripts exist
+	@if [ -f docs/generate_downloads_yaml.py ]; then python3 docs/generate_downloads_yaml.py; fi
+	@if [ -f docs/generate_configurations_yaml.py ]; then python3 docs/generate_configurations_yaml.py; fi
+	@echo "✓ Docs sync complete"
+
 # serve website locally
 .PHONY: localhost
-localhost:
+localhost: sync-docs
 	@echo "Serving website in localhost..."
 	cd docs; bundle exec jekyll serve
 
