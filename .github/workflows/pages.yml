@@ -80,6 +80,10 @@ jobs:
         run: |
           python3 docs/generate_dependency_graph.py
 
+      - name: Install Python dependencies for diagrams
+        run: |
+          pip install matplotlib
+
       - name: Generate diagrams
         run: |
           python3 -m src.validate_structure.diagrams
