@@ -387,6 +387,32 @@ step: $(STEP_ARTIFACT)
 	@echo "✓ STEP export complete for $(BOAT).$(CONFIGURATION)"
 
 # ==============================================================================
+# EXPORT DESIGNS TO DXF FORMAT
+# ==============================================================================
+
+DXF_DIR := $(SRC_DIR)/dxf
+DXF_SOURCE := $(wildcard $(DXF_DIR)/*.py) $(wildcard $(DXF_DIR)/*.sh)
+DXF_ARTIFACT := $(ARTIFACT_DIR)/$(BOAT).$(CONFIGURATION).dxf.dxf
+
+$(DXF_ARTIFACT): $(DESIGN_ARTIFACT) $(DXF_SOURCE) | $(ARTIFACT_DIR)
+	@echo "Exporting DXF: $(BOAT).$(CONFIGURATION)"
+	@if [ "$(UNAME)" = "Darwin" ]; then \
+		bash $(DXF_DIR)/dxf_mac.sh \
+			"$(DESIGN_ARTIFACT)" \
+			"$(DXF_ARTIFACT)" \
+			"$(FREECAD_APP)"; \
+	else \
+		$(FREECAD_PYTHON) -m src.dxf \
+			--input "$(DESIGN_ARTIFACT)" \
+			--output "$(DXF_ARTIFACT)"; \
+	fi
+	@echo "✓ DXF export: $(DXF_ARTIFACT)"
+
+.PHONY: dxf
+dxf: $(DXF_ARTIFACT)
+	@echo "✓ DXF export complete for $(BOAT).$(CONFIGURATION)"
+
+# ==============================================================================
 # BUOYANCY EQUILIBRIUM ANALYSIS
 # ==============================================================================
 

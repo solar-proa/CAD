@@ -200,7 +200,7 @@ This progression de-risks the technology while building toward our ultimate visi
 
 ## Download CAD Models
 
-Access CAD models for all sail configurations in FreeCAD (.FCStd) and STEP (.step) formats.
+Access CAD models for all sail configurations in FreeCAD (.FCStd), STEP (.step), and DXF (.dxf) formats.
 These files include the complete 3D geometry and can be modified for your specific requirements.
 
 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1em; margin: 2em 0;">
@@ -223,6 +223,11 @@ These files include the complete 3D geometry and can be modified for your specif
         📦 STEP
       </a>
       {% endif %}
+      {% if config.dxf_filename %}
+      <a href="{{ '/downloads/' | append: config.dxf_filename | relative_url }}" style="background: #6f42c1; color: white; padding: 0.4em 0.8em; border-radius: 4px; text-decoration: none; font-size: 0.9em;">
+        ✏️ DXF
+      </a>
+      {% endif %}
     </div>
   </div>
 {% endfor %}
@@ -231,6 +236,7 @@ These files include the complete 3D geometry and can be modified for your specif
 **Formats:**
 - **FreeCAD (.FCStd):** Parametric model for [FreeCAD](https://www.freecad.org/) (free and open-source)
 - **STEP (.step):** Universal CAD format compatible with most CAD software
+- **DXF (.dxf):** Drawing exchange format for 2D/3D CAD applications
 
 **License:** Models are shared under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/) - free to use, modify, and share with attribution.
 

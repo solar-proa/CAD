@@ -55,10 +55,16 @@ def generate_downloads_yaml(boat, config_dir, artifacts_dir, output_path):
             step_path = os.path.join(artifacts_dir, step_filename)
             has_step = os.path.exists(step_path)
 
+            # Check if DXF file exists
+            dxf_filename = f'{boat}.{config_name}.dxf.dxf'
+            dxf_path = os.path.join(artifacts_dir, dxf_filename)
+            has_dxf = os.path.exists(dxf_path)
+
             configs.append({
                 'name': config_name,
                 'filename': f'{boat}.{config_name}.color.FCStd',
                 'step_filename': step_filename if has_step else None,
+                'dxf_filename': dxf_filename if has_dxf else None,
                 'description': description
             })
 
@@ -77,6 +83,8 @@ def generate_downloads_yaml(boat, config_dir, artifacts_dir, output_path):
         yaml_lines.append(f"    filename: {config['filename']}")
         if config['step_filename']:
             yaml_lines.append(f"    step_filename: {config['step_filename']}")
+        if config['dxf_filename']:
+            yaml_lines.append(f"    dxf_filename: {config['dxf_filename']}")
         if config['description']:
             yaml_lines.append(f"    description: {config['description']}")
 

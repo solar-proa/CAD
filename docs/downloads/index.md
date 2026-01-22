@@ -5,10 +5,11 @@ title: Downloads
 
 # Design Downloads
 
-CAD files for all boat configurations in FreeCAD (`.FCStd`) and STEP (`.step`) formats.
+CAD files for all boat configurations in FreeCAD (`.FCStd`), STEP (`.step`), and DXF (`.dxf`) formats.
 
 - **FreeCAD files** can be opened in [FreeCAD](https://www.freecadweb.org/) for parametric editing
 - **STEP files** are compatible with most CAD software (Fusion 360, SolidWorks, Onshape, etc.)
+- **DXF files** are drawing exchange format files for 2D/3D CAD applications
 
 ## FreeCAD Files
 
@@ -74,6 +75,40 @@ CAD files for all boat configurations in FreeCAD (`.FCStd`) and STEP (`.step`) f
 <p><em>STEP files are being generated...</em></p>
 {% endif %}
 
+## DXF Files
+
+{% assign dxf_files = site.static_files | where_exp: "file", "file.path contains '/downloads/'" | where_exp: "file", "file.extname == '.dxf'" | sort: "path" %}
+
+{% if dxf_files.size > 0 %}
+<table style="width: 100%; border-collapse: collapse;">
+  <thead>
+    <tr style="background: #f0f0f0;">
+      <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Boat</th>
+      <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Configuration</th>
+      <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">File</th>
+      <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Download</th>
+    </tr>
+  </thead>
+  <tbody>
+{% for file in dxf_files %}
+  {% assign parts = file.name | split: "." %}
+  {% assign boat = parts[0] %}
+  {% assign config = parts[1] %}
+  <tr>
+    <td style="padding: 10px; border: 1px solid #ddd;"><strong>{{ boat | upcase }}</strong></td>
+    <td style="padding: 10px; border: 1px solid #ddd;">{{ config | capitalize }}</td>
+    <td style="padding: 10px; border: 1px solid #ddd; font-family: monospace; font-size: 0.9em;">{{ file.name }}</td>
+    <td style="padding: 10px; border: 1px solid #ddd;">
+      <a href="{{ file.path }}" download style="background: #6f42c1; color: white; padding: 5px 15px; border-radius: 3px; text-decoration: none;">✏️ DXF</a>
+    </td>
+  </tr>
+{% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p><em>DXF files are being generated...</em></p>
+{% endif %}
+
 ## How to Use
 
 ### FreeCAD Files
@@ -87,10 +122,16 @@ CAD files for all boat configurations in FreeCAD (`.FCStd`) and STEP (`.step`) f
 2. **Import the STEP file**: Most CAD software supports STEP import natively
 3. **Note**: STEP files contain geometry only (no parametric history)
 
+### DXF Files
+1. **Open in your preferred CAD software**: AutoCAD, LibreCAD, FreeCAD, etc.
+2. **Import the DXF file**: Most CAD software supports DXF import natively
+3. **Note**: DXF files are commonly used for 2D drawings and laser cutting
+
 ## File Naming Convention
 
 - **FreeCAD**: `{boat}.{configuration}.color.FCStd`
 - **STEP**: `{boat}.{configuration}.step.step`
+- **DXF**: `{boat}.{configuration}.dxf.dxf`
 
 Where:
 - **boat**: `rp1`, `rp2`, `rp3` (Roti Proa models 1, 2, 3)

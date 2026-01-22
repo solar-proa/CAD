@@ -141,7 +141,16 @@ jobs:
           else
             echo "WARNING: No STEP files found in artifact/"
           fi
-      
+
+      - name: Copy DXF models to docs/downloads folder
+        run: |
+          if ls artifact/*.dxf.dxf 1> /dev/null 2>&1; then
+            cp artifact/*.dxf.dxf docs/downloads/
+            echo "Copied $(ls artifact/*.dxf.dxf | wc -l) DXF files"
+          else
+            echo "WARNING: No DXF files found in artifact/"
+          fi
+
       - name: Verify files before Jekyll build
         run: |
           echo "=== Files in docs/renders/ ==="
