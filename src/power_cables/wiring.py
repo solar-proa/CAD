@@ -13,22 +13,22 @@ def create_sweep(group, profile, radius, vertices, name="SweepObject"):
         edges.append((line, f"Edge_{i+1}"))
         print(f"Created edge {i} from {start} to {end}")
 
-    path_obj = group.newObject("Part::Feature", f"{name}Path")
+    path_obj = group.addObject("Part::Feature", f"{name}Path")
     path_obj.Shape = Part.Wire([edge[0] for edge in edges])
 
     if profile.lower() == "circle":
         # creating a profile for every sweep is inefficient, add functionality for reusing profile?
         direction = edges[0][0].tangentAt(0)
-        print(f"Sweep direction: {direction}")
+        # print(f"Sweep direction: {direction}")
         profile_shape = Part.makeCircle(radius, edges[0][0].valueAt(0), direction)
-        profile_obj = group.newObject("Part::Feature", f"{name}Profile")
+        profile_obj = group.addObject("Part::Feature", f"{name}Profile")
         profile_obj.Shape = Part.Wire(profile_shape)
-        print(f"Created circular profile with radius {radius}")
+        # print(f"Created circular profile with radius {radius}")
     
     else:
         raise ValueError(f"Profile type '{profile}' is not supported.")
 
-    sweep = group.newObject("Part::Sweep", name)
+    sweep = group.addObject("Part::Sweep", name)
     sweep.Sections = [profile_obj]
     sweep.Spine = (path_obj, [edge[1] for edge in edges])
     sweep.Solid = True
@@ -37,18 +37,49 @@ def create_sweep(group, profile, radius, vertices, name="SweepObject"):
 
     return sweep
 
-def draw_panel_wires(side, params):
-    """Draw solar panel wires on the specified side part."""
-    for i in range(0, params['panels_longitudinal'] // 2):
-        for j in range(0, params['panels_transversal']):
-            panel = side.newObject("Part::Feature", f"Panel_{i}_{j} ({'solar' if (i + j) % 2 == 0 else 'solar_dark'})")
-            panel.Shape = Part.makeBox(params['panel_length'],
-                                        params['panel_width'],
-                                        params['panel_height'])
-            panel.Placement = FreeCAD.Placement(
-                Base.Vector(- params['pillar_width'] / 2
-                            + j * params['panel_length'],
-                            params['crossdeck_width'] / 2
-                            + i * params['panel_width'],
-                            params['panel_base_level']),
-                FreeCAD.Rotation(Base.Vector(0, 0, 0), 0))
+def wire_solar_panels(group, radius=5):
+    """
+    Extracts all solar panels from the group and draws a wire sweep along their length.
+    
+    Args:
+        group: The FreeCAD Document or Group object containing the panels.
+        radius: Radius of the wire sweep.
+    """
+    panels = []
+    
+    # Handle both Document and Group objects
+    objects = group.Group if hasattr(group, "Group") else group.Objects
+    
+    for obj in objects:
+        # Assume that all solar panels have 'solar' in their label
+        # Check for 'solar' in label (ignoring case)
+        # Using getattr for safety, defaulting to Name if Label not present/empty
+        label = getattr(obj, "Label", getattr(obj, "Name", ""))
+        if "solar" in label.lower():
+            panels.append(obj)
+            
+    print(f"Found {len(panels)} solar panels to wire.")
+
+    for panel in panels:
+        # Get global bounding box of the panel
+        # panel.Shape returns the shape with Placement applied (global coords)
+        bbox = panel.Shape.BoundBox
+        
+        # Calculate start and end points for the wire
+        # Running along the length (X-axis), centered on Width (Y-axis), on Top (Z-axis)
+        
+        mid_y = (bbox.YMin + bbox.YMax) / 2
+        top_z = bbox.ZMax
+        
+        # Start at min X, End at max X
+
+        # TODO: Draw until the central hull and offset the wires for transverse panels, currently draws along the length of panel
+        start_point = Base.Vector(bbox.XMin, mid_y, top_z)
+        end_point = Base.Vector(bbox.XMax, mid_y, top_z)
+        
+        wire_name = f"{panel.Name}_Wire"
+        
+        try:
+            create_sweep(group, "circle", radius, [start_point, end_point], name=wire_name)
+        except Exception as e:
+            print(f"Failed to wire panel {panel.Name}: {e}")
