@@ -1,7 +1,9 @@
 {
   "configuration_name": "broadreach",
   "display_name": "Broad Reach",
+  "display_name_id": "Layar Searah Angin",
   "configuration_description": "Downwind sailing",
+  "configuration_description_id": "Berlayar searah angin",
   
   "required": [
     "render",

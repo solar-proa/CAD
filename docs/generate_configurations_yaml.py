@@ -32,7 +32,9 @@ def main():
             configs.append({
                 'name': data.get('configuration_name', os.path.basename(config_file).replace('.json', '')),
                 'display_name': data.get('display_name', data.get('configuration_name', '')),
-                'description': data.get('configuration_description', '')
+                'display_name_id': data.get('display_name_id', data.get('display_name', '')),
+                'description': data.get('configuration_description', ''),
+                'description_id': data.get('configuration_description_id', data.get('configuration_description', ''))
             })
 
     if not configs:
@@ -49,7 +51,9 @@ def main():
     for config in configs:
         yaml_lines.append(f"- name: {config['name']}")
         yaml_lines.append(f"  display_name: \"{config['display_name']}\"")
+        yaml_lines.append(f"  display_name_id: \"{config['display_name_id']}\"")
         yaml_lines.append(f"  description: \"{config['description']}\"")
+        yaml_lines.append(f"  description_id: \"{config['description_id']}\"")
         yaml_lines.append("")
 
     # Write file

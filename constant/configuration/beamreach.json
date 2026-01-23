@@ -1,7 +1,9 @@
 {
   "configuration_name": "beamreach",
   "display_name": "Beam Reach",
+  "display_name_id": "Layar Melintang",
   "configuration_description": "Cross-wind sailing",
+  "configuration_description_id": "Berlayar melintang angin",
   
   "required": [
     "render",

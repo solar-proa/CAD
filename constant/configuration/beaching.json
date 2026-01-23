@@ -1,7 +1,9 @@
 {
   "configuration_name": "beaching",
   "display_name": "Beaching",
+  "display_name_id": "Sandar Pantai",
   "configuration_description": "Beaching configuration - boat on shore with sails down and rudders lifted",
+  "configuration_description_id": "Konfigurasi sandar pantai - kapal di darat dengan layar turun dan kemudi diangkat",
   
   "required": [
       "mass",

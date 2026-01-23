@@ -1,7 +1,9 @@
 {
   "configuration_name": "goosewing",
   "display_name": "Goose Wing",
+  "display_name_id": "Sayap Angsa",
   "configuration_description": "Running downwind",
+  "configuration_description_id": "Berlari searah angin",
   
   "required": [
     "render",

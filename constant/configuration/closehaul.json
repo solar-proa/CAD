@@ -1,7 +1,9 @@
 {
   "configuration_name": "closehaul",
   "display_name": "Close Haul",
+  "display_name_id": "Layar Melawan Angin",
   "configuration_description": "Upwind sailing",
+  "configuration_description_id": "Berlayar melawan angin",
   
   "required": [
     "render",
