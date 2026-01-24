@@ -21,20 +21,20 @@ lang: id
 
 ## Spesifikasi
 
-**Panjang Keseluruhan:** {{ site.data.rp2_closehaul_parameter.vaka_length }} mm
-**Lebar:** {{ site.data.rp2_closehaul_parameter.beam }} mm (dengan cadik)
-**Massa total (tanpa muatan):** {{ site.data.rp2_beaching_mass.total_mass_kg }} kg
-**Volume total tidak tenggelam:** {{ site.data.rp2_beaching_mass.total_unsinkable_volume_liters }} liter
-**Perpindahan volume tidak tenggelam di air asin:** {{ site.data.rp2_beaching_mass.total_unsinkable_displacement_saltwater_kg }} kg
-**Kapasitas:** 4 penumpang + 2 kru
-**Daya Surya:** 4 kW puncak (8 panel)
-**Daya Motor:** 4 kW listrik
-**Kecepatan Jelajah:** 10 knot
-**Jangkauan Harian:** 50 mil laut (surya-listrik saja)
-**Tipe Baterai:** LiFePO₄
-**Waktu Operasi Motor:** 5 jam (baterai saja)
-**Tiang:** Dua tiang tanpa stay yang dapat diputar, pipa aluminium silinder dengan diameter {{ site.data.rp2_broadreach_parameter.mast_diameter }} mm dan ketebalan dinding {{ site.data.rp2_broadreach_parameter.mast_thickness }} mm; tinggi tiang dari sole vaka: {{ site.data.rp2_broadreach_parameter.mast_height }} mm
-**Rig:** Setiap tiang membawa satu layar tanja, masing-masing berbentuk persegi panjang {{ site.data.rp2_broadreach_parameter.sail_width }} mm x {{ site.data.rp2_broadreach_parameter.sail_height }} mm; total luas layar: {{ site.data.rp2_broadreach_parameter.sail_area_m2 }} meter persegi
+**Panjang Keseluruhan:** {{ site.data.rp2_closehaul_parameter.vaka_length }} mm  
+**Lebar:** {{ site.data.rp2_closehaul_parameter.beam }} mm (dengan cadik)  
+**Massa total (tanpa muatan):** {{ site.data.rp2_beaching_mass.total_mass_kg }} kg  
+**Volume total tidak tenggelam:** {{ site.data.rp2_beaching_mass.total_unsinkable_volume_liters }} liter  
+**Perpindahan volume tidak tenggelam di air asin:** {{ site.data.rp2_beaching_mass.total_unsinkable_displacement_saltwater_kg }} kg  
+**Kapasitas:** 4 penumpang + 2 kru  
+**Daya Surya:** 4 kW puncak (8 panel)  
+**Daya Motor:** 4 kW listrik  
+**Kecepatan Jelajah:** 10 knot  
+**Jangkauan Harian:** 50 mil laut (surya-listrik saja)  
+**Tipe Baterai:** LiFePO₄  
+**Waktu Operasi Motor:** 5 jam (baterai saja)  
+**Tiang:** Dua tiang tanpa stay yang dapat diputar, pipa aluminium silinder dengan diameter {{ site.data.rp2_broadreach_parameter.mast_diameter }} mm dan ketebalan dinding {{ site.data.rp2_broadreach_parameter.mast_thickness }} mm; tinggi tiang dari sole vaka: {{ site.data.rp2_broadreach_parameter.mast_height }} mm  
+**Rig:** Setiap tiang membawa satu layar tanja, masing-masing berbentuk persegi panjang {{ site.data.rp2_broadreach_parameter.sail_width }} mm x {{ site.data.rp2_broadreach_parameter.sail_height }} mm; total luas layar: {{ site.data.rp2_broadreach_parameter.sail_area_m2 }} meter persegi  
 
 ---
 
@@ -75,19 +75,19 @@ lang: id
 Kami menurunkan karakteristik daya apung berikut dari analisis otomatis kami menggunakan metode Newton, secara iteratif menyesuaikan roll/pitch/z-offset kapal sesuai dengan perbedaan antara pusat/jumlah daya apung dan pusat/jumlah massa. Angka-angka menunjukkan kesetimbangan yang dicapai setelah
 {{ site.data.rp2_beaching_buoyancy.iterations }} iterasi menggunakan konfigurasi beaching (tanpa layar dan kemudi diangkat), lihat [implementasi](https://github.com/solar-proa/CAD/blob/main/src/buoyancy/__main__.py).
 
-**Z-offset (penurunan kapal ke air):** {{ site.data.rp2_beaching_buoyancy.equilibrium.z_offset_mm }} mm
-**Derajat pitch:** {{ site.data.rp2_beaching_buoyancy.equilibrium.pitch_deg }} derajat busur
-**Derajat roll:** {{ site.data.rp2_beaching_buoyancy.equilibrium.roll_deg }} derajat busur
-**Volume vaka terendam:** {{ site.data.rp2_beaching_buoyancy.vaka.submerged_volume_liters }} liter
-**Volume total vaka:** {{ site.data.rp2_beaching_buoyancy.vaka.total_volume_liters }} liter
-**Persentase vaka terendam:** {{ site.data.rp2_beaching_buoyancy.vaka.submerged_percent }} %
-**Z-offset vaka:** {{ site.data.rp2_beaching_buoyancy.vaka.z_world_mm }} mm
-**Volume ama terendam:** {{ site.data.rp2_beaching_buoyancy.ama.submerged_volume_liters }} liter
-**Volume total ama:** {{ site.data.rp2_beaching_buoyancy.ama.total_volume_liters }} liter
-**Persentase ama terendam:** {{ site.data.rp2_beaching_buoyancy.ama.submerged_percent }} %
-**Z-offset ama:** {{ site.data.rp2_beaching_buoyancy.ama.z_world_mm }} mm
-**Pusat gravitasi (koordinat dunia x, y, z):** {{ site.data.rp2_beaching_buoyancy.center_of_gravity_world.x }}, {{ site.data.rp2_beaching_buoyancy.center_of_gravity_world.y }}, {{ site.data.rp2_beaching_buoyancy.center_of_gravity_world.z }} mm
-**Pusat daya apung (koordinat dunia x, y, z):** {{ site.data.rp2_beaching_buoyancy.center_of_buoyancy.x }}, {{ site.data.rp2_beaching_buoyancy.center_of_buoyancy.y }}, {{ site.data.rp2_beaching_buoyancy.center_of_buoyancy.z }} mm
+**Z-offset (penurunan kapal ke air):** {{ site.data.rp2_beaching_buoyancy.equilibrium.z_offset_mm }} mm  
+**Derajat pitch:** {{ site.data.rp2_beaching_buoyancy.equilibrium.pitch_deg }} derajat busur  
+**Derajat roll:** {{ site.data.rp2_beaching_buoyancy.equilibrium.roll_deg }} derajat busur  
+**Volume vaka terendam:** {{ site.data.rp2_beaching_buoyancy.vaka.submerged_volume_liters }} liter  
+**Volume total vaka:** {{ site.data.rp2_beaching_buoyancy.vaka.total_volume_liters }} liter  
+**Persentase vaka terendam:** {{ site.data.rp2_beaching_buoyancy.vaka.submerged_percent }} %  
+**Z-offset vaka:** {{ site.data.rp2_beaching_buoyancy.vaka.z_world_mm }} mm  
+**Volume ama terendam:** {{ site.data.rp2_beaching_buoyancy.ama.submerged_volume_liters }} liter  
+**Volume total ama:** {{ site.data.rp2_beaching_buoyancy.ama.total_volume_liters }} liter  
+**Persentase ama terendam:** {{ site.data.rp2_beaching_buoyancy.ama.submerged_percent }} %  
+**Z-offset ama:** {{ site.data.rp2_beaching_buoyancy.ama.z_world_mm }} mm  
+**Pusat gravitasi (koordinat dunia x, y, z):** {{ site.data.rp2_beaching_buoyancy.center_of_gravity_world.x }}, {{ site.data.rp2_beaching_buoyancy.center_of_gravity_world.y }}, {{ site.data.rp2_beaching_buoyancy.center_of_gravity_world.z }} mm  
+**Pusat daya apung (koordinat dunia x, y, z):** {{ site.data.rp2_beaching_buoyancy.center_of_buoyancy.x }}, {{ site.data.rp2_beaching_buoyancy.center_of_buoyancy.y }}, {{ site.data.rp2_beaching_buoyancy.center_of_buoyancy.z }} mm  
 
 ---
 

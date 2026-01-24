@@ -127,7 +127,19 @@ Struktur kemitraan dapat disesuaikan secara fleksibel dengan prioritas organisas
 
 ## Tim Proyek
 
-**Koordinator Proyek:** A/Prof Martin Henz, School of Computing, National University of Singapore
+Proyek Solar Proa adalah proyek mahasiswa yang dilakukan di Sekolah Komputasi,
+Universitas Nasional Singapura (School of Computing,
+National University of Singapore).
+
+**Anggota Tim:**
+
+- Chong Yew Mun (Luke), CS, MComp 2026
+
+- Vikram Goyal, CS, BComp 2027
+
+- Kor Qian Fu, Business AI Systems, BComp 2028
+
+- Lim Jia Yi (Julia), Business AI Systems, BComp 2027
 
 **Penasihat Teknis:**
 
@@ -139,7 +151,8 @@ Struktur kemitraan dapat disesuaikan secara fleksibel dengan prioritas organisas
 
 - Jason Wong, Computer Scientist, BSc (Hons) Computer Science (Pro Bono)
 
-**Dukungan:** National University of Singapore, sponsor industri, donor swasta
+
+**Koordinator Proyek:** A/Prof Martin Henz, School of Computing, National University of Singapore
 
 ---
 

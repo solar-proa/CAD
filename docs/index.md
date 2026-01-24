@@ -125,7 +125,18 @@ Partnership structures can be flexibly tailored to organizational priorities.
 
 ## Project Team
 
-**Project Coordinator:** A/Prof Martin Henz, School of Computing, National University of Singapore
+Project Solar Proa is a student project conducted at the School of Computing,
+National University of Singapore.
+
+**Team Members:**
+
+- Chong Yew Mun (Luke), CS, MComp 2026
+
+- Vikram Goyal, CS, BComp 2027
+
+- Kor Qian Fu, Business AI Systems, BComp 2028
+
+- Lim Jia Yi (Julia), Business AI Systems, BComp 2027
 
 **Technical Advisors:**
 
@@ -137,7 +148,7 @@ Partnership structures can be flexibly tailored to organizational priorities.
 
 - Jason Wong, Computer Scientist, BSc (Hons) Computer Science (Pro Bono)
 
-**Support:** National University of Singapore, industry sponsors, private donors
+**Project Coordinator:** A/Prof Martin Henz, School of Computing, National University of Singapore
 
 ---
 
