@@ -229,6 +229,17 @@ def mirror(side, params):
                     params['aka_base_level']),
         FreeCAD.Rotation(Base.Vector(0, 0, 0), 0))
 
+    outer_navigation_light = side.newObject("Part::Feature", "Outer_Navigation_Light (plastic)")
+    outer_navigation_light.Shape = Part.makeCylinder(
+        params['navigation_light_diameter'] / 2,
+        params['navigation_light_height'])
+    outer_navigation_light.Placement = FreeCAD.Placement(
+        Base.Vector(params['vaka_x_offset']
+                    + params['deck_width'] / 2 - params['aka_width'] * 2,
+                    params['vaka_length'] / 2 - params['aka_width'] / 2,
+                    params['aka_base_level'] + params['stanchion_length']),
+        FreeCAD.Rotation(Base.Vector(0, 0, 1), 90))  # rotate to align fore-aft
+    
     outer_cleat = side.newObject("Part::Feature", "Outer_Cleat (steel)")
     outer_cleat.Shape = horn_cleat(200, 40, 50)  # 150mm long, 40mm wide, 50mm high
     outer_cleat.Placement = FreeCAD.Placement(
@@ -263,9 +274,11 @@ def mirror(side, params):
                     params['aka_base_level']),
         FreeCAD.Rotation(Base.Vector(0, 0, 0), 0))
 
-    inner_cleat = side.newObject("Part::Feature", "Inner_Cleat (steel)")
-    inner_cleat.Shape = horn_cleat(200, 40, 50)  # 150mm long, 40mm wide, 50mm high
-    inner_cleat.Placement = FreeCAD.Placement(
+    inner_navigation_light = side.newObject("Part::Feature", "Inner_Navigation_Light (plastic)")
+    inner_navigation_light.Shape = Part.makeCylinder(
+        params['navigation_light_diameter'] / 2,
+        params['navigation_light_height'])
+    inner_navigation_light.Placement = FreeCAD.Placement(
         Base.Vector(params['vaka_x_offset']
                     - params['deck_width'] / 2 + params['aka_width'] / 2,
                     params['vaka_length'] / 2 - params['gunwale_width'] / 2,
@@ -401,6 +414,16 @@ def mirror(side, params):
                     params['mast_base_level']),
         FreeCAD.Rotation(Base.Vector(0, 0, 0), 0))
 
+    masthead_navigation_light = side.newObject("Part::Feature", "Masthead_Navigation_Light (plastic)")
+    masthead_navigation_light.Shape = Part.makeCylinder(
+        params['navigation_light_diameter'] / 2,
+        params['navigation_light_height'])
+    masthead_navigation_light.Placement = FreeCAD.Placement(
+        Base.Vector(params['vaka_x_offset'],
+                    params['mast_distance_from_center'],
+                    params['mast_base_level'] + params['mast_height']),
+        FreeCAD.Rotation(Base.Vector(0, 0, 1), 90)) 
+    
     # hull cylinder for cutting rudder vaka mounts
     
     hull_cylinder = elliptical_cylinder(params['vaka_length'],

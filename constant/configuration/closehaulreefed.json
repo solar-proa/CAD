@@ -22,5 +22,10 @@
   "rudder_rotation_kuning": 10,
   "rudder_raised_kuning": false,
   "reefing_percentage_biru": 60,
-  "reefing_percentage_kuning": 60
+  "reefing_percentage_kuning": 60,
+
+  "wind_speed_kt": 25,
+  "wind_direction": 45,
+
+  "boat_speed_kt": 10  
 }

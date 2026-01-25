@@ -530,4 +530,4 @@ Laporan ini dihasilkan secara otomatis dari model CAD parametrik menggunakan mod
 
 ---
 
-[← Kembali ke Ringkasan RP2]({{ '/id/rp2.html' | relative_url }})
+[← Kembali ke Ringkasan RP2]({{ '/id/rp2.html' | relative_url }}) | [Lihat Analisis Stabilitas & Daya Apung →]({{ '/id/stability_rp2.html' | relative_url }})

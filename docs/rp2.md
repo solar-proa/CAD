@@ -63,59 +63,25 @@ title: Roti Proa II - 9m Day Tourism Vessel
 
 ---
 
-## Buoyancy analysis
+## Stability & Buoyancy
 
-<div style="max-width: 600px; margin: 1em auto;">
-  <img src="{{ '/renders/rp2.beaching.buoyancy_design.render.front.png' | relative_url }}" alt="Buoyancy equilibrium - front view" style="width: 100%; border: 1px solid #ddd; border-radius: 4px;">
-  <p style="text-align: center; font-size: 0.9em; color: #666; margin-top: 0.5em;">Unloaded boat at equilibrium waterline (front view)</p>
-</div>
+The vessel's stability has been analyzed using automated buoyancy equilibrium and GZ curve calculations.
 
-We derive the following buoyancy characteristics from
-our automated analysis using Newton's method, iteratively adjusting the
-roll/pitch/z-offset of the boat according to the difference between the center/amount of buoyancy and the center/amount of mass. The numbers indicate the equilibrium achieved after
-{{ site.data.rp2_beaching_buoyancy.iterations }} iterations using
-the beaching configuration (no sails and rudders lifted),
-see [implementation](https://github.com/solar-proa/CAD/blob/main/src/buoyancy/__main__.py).
+**[View Full Stability & Buoyancy Analysis →]({{ '/stability_rp2.html' | relative_url }})**
 
-**Z-offset (boat lowering into the water):** {{ site.data.rp2_beaching_buoyancy.equilibrium.z_offset_mm }} mm  
-**Pitch degrees:** {{ site.data.rp2_beaching_buoyancy.equilibrium.pitch_deg }} arc degrees  
-**Roll degrees:** {{ site.data.rp2_beaching_buoyancy.equilibrium.roll_deg }} arc degrees  
-**Vaka submerged volume:** {{ site.data.rp2_beaching_buoyancy.vaka.submerged_volume_liters }} liters  
-**Vaka total volume:** {{ site.data.rp2_beaching_buoyancy.vaka.total_volume_liters }} liters  
-**Vaka submerged percentage:** {{ site.data.rp2_beaching_buoyancy.vaka.submerged_percent }} %  
-**Vaka z-offset:** {{ site.data.rp2_beaching_buoyancy.vaka.z_world_mm }} mm  
-**Ama submerged volume:** {{ site.data.rp2_beaching_buoyancy.ama.submerged_volume_liters }} liters  
-**Ama total volume:** {{ site.data.rp2_beaching_buoyancy.ama.total_volume_liters }} liters  
-**Ama submerged percentage:** {{ site.data.rp2_beaching_buoyancy.ama.submerged_percent }} %  
-**Ama z-offset:** {{ site.data.rp2_beaching_buoyancy.ama.z_world_mm }} mm  
-**Center of gravity (world-coordinates x, y, z):** {{ site.data.rp2_beaching_buoyancy.center_of_gravity_world.x }}, {{ site.data.rp2_beaching_buoyancy.center_of_gravity_world.y }}, {{ site.data.rp2_beaching_buoyancy.center_of_gravity_world.z }} mm  
-**Center of buoyancy (world-coordinates x, y, z):** {{ site.data.rp2_beaching_buoyancy.center_of_buoyancy.x }}, {{ site.data.rp2_beaching_buoyancy.center_of_buoyancy.y }}, {{ site.data.rp2_beaching_buoyancy.center_of_buoyancy.z }} mm
+| Parameter | Value | Description |
+|-----------|-------|-------------|
+| Draft | {{ site.data.rp2_beaching_buoyancy.equilibrium.z_offset_mm }} mm | Depth below waterline at equilibrium |
+| Max righting arm | {{ site.data.rp2_beaching_gz.summary.max_gz_m | times: 100 | round: 0 }} cm | At {{ site.data.rp2_beaching_gz.summary.max_gz_angle_deg }}° heel |
+| Capsize angle | {{ site.data.rp2_beaching_gz.summary.capsize_angle_deg }}° | Away from ama |
+| Turtle angle | {{ site.data.rp2_beaching_gz.summary.turtle_angle_deg }}° | Towards ama |
+| Roll period | {{ site.data.rp2_beaching_gz.natural_periods.roll_period_s }} s | Rough estimate |
+| Pitch period | {{ site.data.rp2_beaching_gz.natural_periods.pitch_period_s }} s | Rough estimate |
+| Heave period | {{ site.data.rp2_beaching_gz.natural_periods.heave_period_s }} s | Rough estimate |
 
 ---
 
-## Stability analysis
-
-The GZ curve (righting arm curve) shows how the boat's stability varies with heel angle. For each heel angle, we compute the equilibrium waterline (where buoyancy equals weight) and measure the horizontal distance between the center of buoyancy (CoB) and center of gravity (CoG). This distance—the righting arm GZ—multiplied by displacement gives the righting moment that returns the boat to equilibrium.
-
-<div style="max-width: 800px; margin: 2em auto;">
-  <img src="{{ '/renders/rp2.beaching.gz.png' | relative_url }}" alt="GZ Curve" style="width: 100%; border: 1px solid #ddd; border-radius: 4px;">
-</div>
-
-As a proa with an outrigger (ama), this vessel has asymmetric stability characteristics:
-
-**Towards ama (positive heel):** The ama provides substantial buoyancy leverage when submerged.
-- Maximum righting arm: {{ site.data.rp2_beaching_gz.summary.max_gz_m | times: 100 | round: 0 }} cm at {{ site.data.rp2_beaching_gz.summary.max_gz_angle_deg }}° heel
-- Turtle angle: {{ site.data.rp2_beaching_gz.summary.turtle_angle_deg }}° (ama driven under, boat inverts)
-
-**Away from ama (negative heel):** Stability comes from the elevated ama's weight acting as counterweight.
-- Capsize angle: {{ site.data.rp2_beaching_gz.summary.capsize_angle_deg }}° (boat rolls over, ama ends up on top)
-- Ama engagement: {{ site.data.rp2_beaching_gz.summary.ama_engagement_angle_deg }}° (ama touches water)
-
-Traditionally, proas are sailed with the ama to windward. The wind force heels the boat away from the ama, lifting it (partially or even completely) out of the water to reduce drag ("flying the ama"). The operating envelope is typically -5° to -20° heel in that case, well within the stable region. A _solar_ proa should be able to sail well also with the ama to leeward, to keep the sails from casting a shadow on the solar panels. At a heeling angle of around 4°, the ama will be fully submerged and cause maximum drag but still induce a significant righting moment until the turtle angle is reached. See [implementation](https://github.com/solar-proa/CAD/blob/main/src/gz/__main__.py).
-
----
-
-## Structural validation
+## Structural Validation
 
 The vessel's structural integrity has been validated under multiple load scenarios including static loads, wave impacts, wind forces, and crane operations. All tests pass with safety factors exceeding the required minimum of 2.0.
 

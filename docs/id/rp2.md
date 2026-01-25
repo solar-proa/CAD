@@ -65,51 +65,21 @@ lang: id
 
 ---
 
-## Analisis Daya Apung
+## Stabilitas & Daya Apung
 
-<div style="max-width: 600px; margin: 1em auto;">
-  <img src="{{ '/renders/rp2.beaching.buoyancy_design.render.front.png' | relative_url }}" alt="Kesetimbangan daya apung - tampak depan" style="width: 100%; border: 1px solid #ddd; border-radius: 4px;">
-  <p style="text-align: center; font-size: 0.9em; color: #666; margin-top: 0.5em;">Kapal tanpa muatan pada garis air kesetimbangan (tampak depan)</p>
-</div>
+Stabilitas kapal telah dianalisis menggunakan perhitungan kesetimbangan daya apung otomatis dan kurva GZ.
 
-Kami menurunkan karakteristik daya apung berikut dari analisis otomatis kami menggunakan metode Newton, secara iteratif menyesuaikan roll/pitch/z-offset kapal sesuai dengan perbedaan antara pusat/jumlah daya apung dan pusat/jumlah massa. Angka-angka menunjukkan kesetimbangan yang dicapai setelah
-{{ site.data.rp2_beaching_buoyancy.iterations }} iterasi menggunakan konfigurasi beaching (tanpa layar dan kemudi diangkat), lihat [implementasi](https://github.com/solar-proa/CAD/blob/main/src/buoyancy/__main__.py).
+**[Lihat Analisis Stabilitas & Daya Apung Lengkap →]({{ '/id/stability_rp2.html' | relative_url }})**
 
-**Z-offset (penurunan kapal ke air):** {{ site.data.rp2_beaching_buoyancy.equilibrium.z_offset_mm }} mm  
-**Derajat pitch:** {{ site.data.rp2_beaching_buoyancy.equilibrium.pitch_deg }} derajat busur  
-**Derajat roll:** {{ site.data.rp2_beaching_buoyancy.equilibrium.roll_deg }} derajat busur  
-**Volume vaka terendam:** {{ site.data.rp2_beaching_buoyancy.vaka.submerged_volume_liters }} liter  
-**Volume total vaka:** {{ site.data.rp2_beaching_buoyancy.vaka.total_volume_liters }} liter  
-**Persentase vaka terendam:** {{ site.data.rp2_beaching_buoyancy.vaka.submerged_percent }} %  
-**Z-offset vaka:** {{ site.data.rp2_beaching_buoyancy.vaka.z_world_mm }} mm  
-**Volume ama terendam:** {{ site.data.rp2_beaching_buoyancy.ama.submerged_volume_liters }} liter  
-**Volume total ama:** {{ site.data.rp2_beaching_buoyancy.ama.total_volume_liters }} liter  
-**Persentase ama terendam:** {{ site.data.rp2_beaching_buoyancy.ama.submerged_percent }} %  
-**Z-offset ama:** {{ site.data.rp2_beaching_buoyancy.ama.z_world_mm }} mm  
-**Pusat gravitasi (koordinat dunia x, y, z):** {{ site.data.rp2_beaching_buoyancy.center_of_gravity_world.x }}, {{ site.data.rp2_beaching_buoyancy.center_of_gravity_world.y }}, {{ site.data.rp2_beaching_buoyancy.center_of_gravity_world.z }} mm  
-**Pusat daya apung (koordinat dunia x, y, z):** {{ site.data.rp2_beaching_buoyancy.center_of_buoyancy.x }}, {{ site.data.rp2_beaching_buoyancy.center_of_buoyancy.y }}, {{ site.data.rp2_beaching_buoyancy.center_of_buoyancy.z }} mm  
-
----
-
-## Analisis Stabilitas
-
-Kurva GZ (kurva lengan penegak) menunjukkan bagaimana stabilitas kapal bervariasi dengan sudut kemiringan. Untuk setiap sudut kemiringan, kami menghitung garis air kesetimbangan (di mana daya apung sama dengan berat) dan mengukur jarak horizontal antara pusat daya apung (CoB) dan pusat gravitasi (CoG). Jarak ini—lengan penegak GZ—dikalikan dengan perpindahan memberikan momen penegak yang mengembalikan kapal ke kesetimbangan.
-
-<div style="max-width: 800px; margin: 2em auto;">
-  <img src="{{ '/renders/rp2.beaching.gz.png' | relative_url }}" alt="Kurva GZ" style="width: 100%; border: 1px solid #ddd; border-radius: 4px;">
-</div>
-
-Sebagai proa dengan cadik (ama), kapal ini memiliki karakteristik stabilitas asimetris:
-
-**Menuju ama (kemiringan positif):** Ama memberikan leverage daya apung substansial saat terendam.
-- Lengan penegak maksimum: {{ site.data.rp2_beaching_gz.summary.max_gz_m | times: 100 | round: 0 }} cm pada kemiringan {{ site.data.rp2_beaching_gz.summary.max_gz_angle_deg }}°
-- Sudut turtle: {{ site.data.rp2_beaching_gz.summary.turtle_angle_deg }}° (ama terdorong ke bawah, kapal terbalik)
-
-**Menjauhi ama (kemiringan negatif):** Stabilitas berasal dari berat ama yang terangkat yang bertindak sebagai pemberat.
-- Sudut capsize: {{ site.data.rp2_beaching_gz.summary.capsize_angle_deg }}° (kapal berguling, ama berakhir di atas)
-- Keterlibatan ama: {{ site.data.rp2_beaching_gz.summary.ama_engagement_angle_deg }}° (ama menyentuh air)
-
-Secara tradisional, proa berlayar dengan ama di sisi angin. Gaya angin memiringkan kapal menjauhi ama, mengangkatnya (sebagian atau bahkan sepenuhnya) keluar dari air untuk mengurangi hambatan ("flying the ama"). Amplop operasi biasanya kemiringan -5° hingga -20° dalam kasus tersebut, dengan baik dalam wilayah stabil. Proa _surya_ harus dapat berlayar dengan baik juga dengan ama di sisi bawah angin, untuk menjaga layar dari membayangi panel surya. Pada sudut kemiringan sekitar 4°, ama akan sepenuhnya terendam dan menyebabkan hambatan maksimum tetapi masih menginduksi momen penegak yang signifikan sampai sudut turtle tercapai. Lihat [implementasi](https://github.com/solar-proa/CAD/blob/main/src/gz/__main__.py).
+| Parameter | Nilai | Deskripsi |
+|-----------|-------|-----------|
+| Sarat | {{ site.data.rp2_beaching_buoyancy.equilibrium.z_offset_mm }} mm | Kedalaman di bawah garis air pada kesetimbangan |
+| Lengan penegak maks | {{ site.data.rp2_beaching_gz.summary.max_gz_m | times: 100 | round: 0 }} cm | Pada kemiringan {{ site.data.rp2_beaching_gz.summary.max_gz_angle_deg }}° |
+| Sudut capsize | {{ site.data.rp2_beaching_gz.summary.capsize_angle_deg }}° | Menjauhi ama |
+| Sudut turtle | {{ site.data.rp2_beaching_gz.summary.turtle_angle_deg }}° | Menuju ama |
+| Periode roll | {{ site.data.rp2_beaching_gz.natural_periods.roll_period_s }} s | Perkiraan kasar |
+| Periode pitch | {{ site.data.rp2_beaching_gz.natural_periods.pitch_period_s }} s | Perkiraan kasar |
+| Periode heave | {{ site.data.rp2_beaching_gz.natural_periods.heave_period_s }} s | Perkiraan kasar |
 
 ---
 

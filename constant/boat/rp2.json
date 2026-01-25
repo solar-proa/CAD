@@ -59,6 +59,7 @@
   "mast_thickness": 6.35,
   "mast_height": 8500,
   "mast_distance_from_center_offset": 0,
+  "mast_section_overlap": 800,
   
   "mast_partner_width_offset": 200,
   "mast_partner_thickness": 50,
@@ -124,6 +125,7 @@
   "side_board_plate_thickness": 10,
   "side_board_plate_above_sole": 600,
 
-  "towing_ring_major_diameter": 120,
-  "towing_ring_minor_diameter": 20
+  "navigation_light_height": 100,
+  "navigation_light_diameter": 120
+    
 }

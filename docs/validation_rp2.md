@@ -528,4 +528,4 @@ This report was generated automatically from the parametric CAD model using the 
 
 ---
 
-[← Back to RP2 Overview]({{ '/rp2.html' | relative_url }})
+[← Back to RP2 Overview]({{ '/rp2.html' | relative_url }}) | [View Stability & Buoyancy Analysis →]({{ '/stability_rp2.html' | relative_url }})

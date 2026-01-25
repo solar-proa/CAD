@@ -1,11 +1,25 @@
-I: 543                           ~======~ ~=======|
-II: 589 (has bulge, losing 32cm) |======~ ~=======<
+I: 543                 existing cone (<)======~ ~=======|
+II: 589 (has bulge, losing 32cm)     |======~ ~=======<
 
-OK. I'm wondering if the sails are big enough. what do you think?  At the moment, we two sails each 4.5m x 4.5m for a boat of LOA 9m.
+Option 1: include bulge in design: ==< ~==
+295 (II)   373(I)    294 (II)
+considering losing 32cm:
+295 (II)   341(I)    294 (II) = 930
+ <=====<  ~======|  |=====>
 
-295 (II)  343(I)  294 (II)
- <=====< ~====== =====>
+Option 2: cut off bulge: ==~ ~==
+350 (I)   443(II)    278 (II) = 930
+ <=====~  ~======|  |=====>
 
-118
+Option 3: cut off bulge, reuse existing cone,
+join two pieces in the middle,
+cut holes to access interior gussets:
+543 (I)    387 (II)
+ <=====|   |=====>
 
-100 25 25
+
+Cone manufacturing:
+basis of zig-zag: 100+25, but remove about 15 at the tip
+Add 25 of straight cut to make the curve more smooth.
+Round off the 25+25=50 cuts for easy bending.
+

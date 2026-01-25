@@ -11,6 +11,7 @@ Arguments can be passed via:
 import sys
 import os
 import json
+import math
 
 # Add paths for imports
 sys.path.insert(0, os.path.dirname(__file__))
@@ -232,29 +233,62 @@ rudder_kuning.Placement = FreeCAD.Placement(
 vessel = doc.addObject("App::Part", "Vessel Central")
 central(vessel, params)
 
-# Direction arrow indicating boat movement direction (positive Y)
-# Positioned outside the vaka hull on the outer side (negative X from vaka)
-arrow_length = params.get('direction_arrow_length', 3000)  # default 3m
-arrow_shaft_radius = 50  # 50mm radius shaft for visibility
-print("Creating direction arrow...")
-try:
-    arrow_shape = direction_arrow(arrow_length, shaft_radius=arrow_shaft_radius)
-    print(f"  Arrow shape created, volume: {arrow_shape.Volume}")
-    arrow = doc.addObject("Part::Feature", "Direction_Arrow__indicator")
-    arrow.Shape = arrow_shape
-    # Rotate from Z-axis to negative Y-axis (-90° around X)
-    # Position at beam + 1000mm, z = -400mm
-    arrow_x = params['beam'] + 1000
-    arrow_z = -400
-    arrow.Placement = FreeCAD.Placement(
-        Base.Vector(arrow_x, arrow_length/2, arrow_z),
-        FreeCAD.Rotation(Base.Vector(1, 0, 0), -90))  # -90° to point toward negative Y
-    print(f"  Arrow placed at X={arrow_x}, Z={arrow_z}")
-except Exception as e:
-    print(f"  ERROR creating arrow: {e}")
-    import traceback
-    traceback.print_exc()
+arrows = doc.addObject("App::Part", "Direction Arrows")
 
+# boat arrow indicating boat movement direction (positive Y)
+# positioned outside the vaka hull on the outer side (negative X from vaka)
+if 'boat_speed_kt' in params:
+    boat_arrow_length = params['vaka_length'] / 3
+    boat_arrow_shaft_radius = params['vaka_length'] / 200
+    boat_arrow_shape = direction_arrow(boat_arrow_length,
+                                       shaft_radius=boat_arrow_shaft_radius)
+    boat_arrow = arrows.newObject("Part::Feature", "Boat_Arrow__boat_indicator")
+    boat_arrow.Shape = boat_arrow_shape
+    boat_arrow_x = params['vaka_x_offset']
+    boat_arrow_y = params['vaka_length'] / 2 + 200
+    boat_arrow_z = params['deck_base_level']
+    boat_arrow.Placement = FreeCAD.Placement(
+        Base.Vector(boat_arrow_x, boat_arrow_y, boat_arrow_z),
+        FreeCAD.Rotation(Base.Vector(1, 0, 0), -90))
+
+# wind arrows indicating wind movement direction
+# positioned so arrow tip is at mast (arrow points into the mast)
+def wind_arrows(y_offset, z_offset, h_offset):
+    wind_arrow_length = params['wind_speed_kt'] * params['vaka_length'] / 50
+    wind_arrow_shaft_radius = params['vaka_length'] / 200
+    wind_arrow_shape = direction_arrow(wind_arrow_length,
+                                       shaft_radius=wind_arrow_shaft_radius)
+    wind_arrow = arrows.newObject("Part::Feature", "Wind_Arrow__wind_indicator")
+    wind_arrow.Shape = wind_arrow_shape
+    tip_distance = 0  # horizontal distance from mast to arrow tip
+    wind_dir_rad = math.radians(params['wind_direction'])
+    total_offset = wind_arrow_length + tip_distance
+    # Base position along arrow direction
+    wind_arrow_x = (params['vaka_x_offset'] -
+                    total_offset * math.cos(wind_dir_rad))
+    wind_arrow_y = y_offset + total_offset * math.sin(wind_dir_rad)
+    # Add perpendicular horizontal offset
+    wind_arrow_x += h_offset * math.sin(wind_dir_rad)
+    wind_arrow_y += h_offset * math.cos(wind_dir_rad)
+    wind_arrow_z = params['mast_height'] - z_offset
+    rot1 = FreeCAD.Rotation(FreeCAD.Vector(0, 1, 0), 90)
+    rot2 = FreeCAD.Rotation(FreeCAD.Vector(0, 0, 1),
+                            - params['wind_direction'])
+    combined = rot2.multiply(rot1)
+    wind_arrow.Placement = FreeCAD.Placement(
+        Base.Vector(wind_arrow_x, wind_arrow_y, wind_arrow_z),
+        combined)
+
+if 'wind_speed_kt' in params:
+    spacing = params['vaka_length'] / 10
+    for i in range(0, 4):
+        for j in range(0, 4):
+            h_off = (j - 1.5) * spacing 
+            wind_arrows(params['mast_distance_from_center'],
+                        i * spacing, h_off)
+            wind_arrows(- params['mast_distance_from_center'],
+                        i * spacing, h_off)
+    
 # recompute before stats and rendering
 doc.recompute()
 

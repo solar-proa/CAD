@@ -133,13 +133,13 @@ National University of Singapore).
 
 **Anggota Tim:**
 
-- Chong Yew Mun (Luke), CS, MComp 2026
+- Chong Yew Mun Luke, CS, MComp 2026
 
 - Vikram Goyal, CS, BComp 2027
 
 - Kor Qian Fu, Business AI Systems, BComp 2028
 
-- Lim Jia Yi (Julia), Business AI Systems, BComp 2027
+- Lim Jia Yi (Julia), Business AI Systems, BComp 2028
 
 **Penasihat Teknis:**
 
@@ -152,7 +152,7 @@ National University of Singapore).
 - Jason Wong, Computer Scientist, BSc (Hons) Computer Science (Pro Bono)
 
 
-**Koordinator Proyek:** A/Prof Martin Henz, School of Computing, National University of Singapore
+**Koordinator Proyek:** [Martin Henz](https://www.linkedin.com/in/martin-henz/), Associate Professor, School of Computing, National University of Singapore
 
 ---
 

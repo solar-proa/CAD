@@ -18,9 +18,11 @@ FREECAD := $(shell which freecad 2>/dev/null || \
 ifeq ($(UNAME),Darwin)
 	FREECAD_CMD := $(FREECAD_APP) --console
 	FREECAD_PYTHON := $(FREECAD_BUNDLE)/Contents/Resources/bin/python
+	FILTER_NOISE := 2>&1 | grep -v "3DconnexionNavlib" | grep -v "^$$"
 else
 	FREECAD_CMD := xvfb-run -a freecadcmd
 	FREECAD_PYTHON := freecad-python
+	FILTER_NOISE :=
 endif
 
 # ==============================================================================
@@ -262,7 +264,7 @@ DESIGN_ARTIFACT := $(ARTIFACT_DIR)/$(BOAT).$(CONFIGURATION).design.FCStd
 $(DESIGN_ARTIFACT): $(PARAMETER_ARTIFACT) $(DESIGN_SOURCE) | $(DESIGN_DIR)
 	@echo "Generating design: $(BOAT).$(CONFIGURATION)"
 	@echo "  Parameters: $(PARAMETER_ARTIFACT)"
-	@PARAMS_PATH=$(PARAMETER_ARTIFACT) OUTPUT_PATH=$(DESIGN_ARTIFACT) $(FREECAD_CMD) $(DESIGN_DIR)/main.py || true
+	@PARAMS_PATH=$(PARAMETER_ARTIFACT) OUTPUT_PATH=$(DESIGN_ARTIFACT) $(FREECAD_CMD) $(DESIGN_DIR)/main.py $(FILTER_NOISE) || true
 	@if [ -f "$(DESIGN_ARTIFACT)" ]; then \
 		echo "✓ Design complete: $(DESIGN_ARTIFACT)"; \
 		if [ "$(UNAME)" = "Darwin" ]; then \
@@ -425,7 +427,7 @@ GZ_SOURCE := $(wildcard $(GZ_DIR)/*.py) $(wildcard $(SRC_DIR)/physics/*.py)
 GZ_ARTIFACT := $(ARTIFACT_DIR)/$(BOAT).$(CONFIGURATION).gz.json
 GZ_PNG := $(ARTIFACT_DIR)/$(BOAT).$(CONFIGURATION).gz.png
 
-$(GZ_ARTIFACT): $(BUOYANCY_ARTIFACT) $(DESIGN_ARTIFACT) $(GZ_SOURCE) | $(ARTIFACT_DIR)
+$(GZ_ARTIFACT): $(BUOYANCY_ARTIFACT) $(DESIGN_ARTIFACT) $(PARAMETER_ARTIFACT) $(GZ_SOURCE) | $(ARTIFACT_DIR)
 	@echo "Computing GZ curve: $(BOAT).$(CONFIGURATION)"
 	@if [ "$(UNAME)" = "Darwin" ]; then \
 		PYTHONPATH=$(FREECAD_BUNDLE)/Contents/Resources/lib:$(FREECAD_BUNDLE)/Contents/Resources/Mod:$(PWD) \
@@ -433,12 +435,14 @@ $(GZ_ARTIFACT): $(BUOYANCY_ARTIFACT) $(DESIGN_ARTIFACT) $(GZ_SOURCE) | $(ARTIFAC
 		$(FREECAD_PYTHON) -m src.gz \
 			--design $(DESIGN_ARTIFACT) \
 			--buoyancy $(BUOYANCY_ARTIFACT) \
+			--parameters $(PARAMETER_ARTIFACT) \
 			--output $@ \
 			--output-png $(GZ_PNG); \
 	else \
 		PYTHONPATH=$(PWD) $(FREECAD_PYTHON) -m src.gz \
 			--design $(DESIGN_ARTIFACT) \
 			--buoyancy $(BUOYANCY_ARTIFACT) \
+			--parameters $(PARAMETER_ARTIFACT) \
 			--output $@ \
 			--output-png $(GZ_PNG); \
 	fi

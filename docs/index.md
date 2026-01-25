@@ -130,25 +130,25 @@ National University of Singapore.
 
 **Team Members:**
 
-- Chong Yew Mun (Luke), CS, MComp 2026
+- Chong Yew Mun Luke, CS, MComp 2026
 
 - Vikram Goyal, CS, BComp 2027
 
 - Kor Qian Fu, Business AI Systems, BComp 2028
 
-- Lim Jia Yi (Julia), Business AI Systems, BComp 2027
+- Lim Jia Yi (Julia), Business AI Systems, BComp 2028
 
 **Technical Advisors:**
 
-- [Livio Deltin](https://www.linkedin.com/in/livio-deltin-37936629/), Senior Naval Architect, MEng CEng, Technical Advisor (Pro Bono)
+- [Livio Deltin](https://www.linkedin.com/in/livio-deltin-37936629/), Senior Naval Architect, MEng CEng (Pro Bono)
 
-- [Marcel Eckhardt](https://www.linkedin.com/in/marcel-eckhardt-2607448a/), Electrical Engineer, Technical Advisor (Pro Bono)
+- [Marcel Eckhardt](https://www.linkedin.com/in/marcel-eckhardt-2607448a/), Electrical Engineer (Pro Bono)
 
-- [Abdullah Farid](https://www.linkedin.com/in/abdullah-engineer/), Engineer, Wärtsilä Marine, Advisor (Pro Bono)
+- [Abdullah Farid](https://www.linkedin.com/in/abdullah-engineer/), Engineer, Wärtsilä Marine (Pro Bono)
 
 - Jason Wong, Computer Scientist, BSc (Hons) Computer Science (Pro Bono)
 
-**Project Coordinator:** A/Prof Martin Henz, School of Computing, National University of Singapore
+**Project Coordinator:** [Martin Henz](https://www.linkedin.com/in/martin-henz/), Associate Professor, School of Computing, National University of Singapore
 
 ---
 

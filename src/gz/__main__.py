@@ -39,6 +39,75 @@ from src.physics.center_of_buoyancy import compute_center_of_buoyancy
 
 # Physical constants
 GRAVITY_M_S2 = 9.81
+SEAWATER_DENSITY_KG_M3 = 1025.0
+
+
+def estimate_natural_periods(mass_kg: float, submerged_volume_liters: float,
+                              draft_m: float, beam_m: float, loa_m: float) -> dict:
+    """
+    Estimate natural periods using simple empirical formulas.
+
+    These are APPROXIMATE values suitable for initial design. For proas and other
+    asymmetric hulls, the standard linearized formulas don't apply well.
+    Physical testing is recommended for accurate values.
+
+    Formulas:
+    - Heave: T ≈ 2π√(m / ρgA_wp) where A_wp is estimated from volume/draft
+    - Roll: Empirical estimate based on beam (proas are stiff, ~1.5-2.5s)
+    - Pitch: Empirical estimate based on LOA (typically 3-5s for multihulls)
+
+    Args:
+        mass_kg: Total displacement mass
+        submerged_volume_liters: Submerged volume at equilibrium
+        draft_m: Draft (depth below waterline)
+        beam_m: Overall beam (including ama)
+        loa_m: Length overall
+
+    Returns:
+        Dictionary with estimated periods and notes
+    """
+    result = {}
+
+    # Estimate waterplane area from submerged volume and draft
+    # A_wp ≈ V / draft (prismatic coefficient ~0.7 for typical hulls)
+    submerged_volume_m3 = submerged_volume_liters / 1000.0
+    if draft_m > 0.05:
+        waterplane_area_m2 = 0.7 * submerged_volume_m3 / draft_m
+    else:
+        waterplane_area_m2 = None
+
+    # Heave period: T = 2π√(m / ρgA_wp)
+    if waterplane_area_m2 and waterplane_area_m2 > 0:
+        heave_stiffness = SEAWATER_DENSITY_KG_M3 * GRAVITY_M_S2 * waterplane_area_m2
+        t_heave = 2 * math.pi * math.sqrt(mass_kg / heave_stiffness)
+        result['heave_period_s'] = round(t_heave, 1)
+    else:
+        result['heave_period_s'] = None
+
+    # Roll period: empirical estimate for wide-beam multihulls
+    # Wide beam = high GM = short roll period (stiff, snappy motion)
+    # Typical range: 1.5-2.5s for proas with 6m beam
+    if beam_m > 0:
+        # Rough scaling: T_roll ≈ 0.35 * beam for stiff multihulls
+        t_roll = 0.35 * beam_m
+        result['roll_period_s'] = round(t_roll, 1)
+    else:
+        result['roll_period_s'] = None
+
+    # Pitch period: empirical estimate based on LOA
+    # Longer hull = higher pitch inertia = longer period
+    # Typical range: 3-5s for 9m multihulls
+    if loa_m > 0:
+        # Rough scaling: T_pitch ≈ 0.4 * LOA^0.5 for lightweight multihulls
+        t_pitch = 0.4 * math.sqrt(loa_m) + 1.5
+        result['pitch_period_s'] = round(t_pitch, 1)
+    else:
+        result['pitch_period_s'] = None
+
+    result['waterplane_area_m2'] = round(waterplane_area_m2, 2) if waterplane_area_m2 else None
+    result['note'] = 'Approximate values - physical testing recommended for proas'
+
+    return result
 
 
 def transform_point(point: dict, z_displacement: float, pitch_deg: float,
@@ -68,6 +137,78 @@ def transform_point(point: dict, z_displacement: float, pitch_deg: float,
         'x': x_new + rotation_center['x'],
         'y': y_new + rotation_center['y'],
         'z': z_new + rotation_center['z'] + z_displacement
+    }
+
+
+def compute_gm_from_gz_curve(gz_data: list, equilibrium_roll_deg: float = 0.0) -> dict:
+    """
+    Compute metacentric heights from GZ curve data.
+
+    GM (transverse) = dGZ/dθ at equilibrium (θ in radians)
+
+    For proas with outriggers, the GZ curve has a discontinuity at ama engagement.
+    We compute GM from the local slope at equilibrium, staying on one side of
+    the ama engagement transition.
+
+    Args:
+        gz_data: List of GZ curve points from compute_gz_curve
+        equilibrium_roll_deg: Equilibrium roll angle
+
+    Returns:
+        Dictionary with GM values
+    """
+    converged = [p for p in gz_data if p.get('converged', False)]
+    if len(converged) < 2:
+        return {'gm_m': None, 'gm_longitudinal_m': None}
+
+    # Sort by angle
+    converged.sort(key=lambda p: p['heel_deg'])
+
+    # For a proa, ama engagement typically happens around 0° to small positive angles.
+    # Use the slope on the negative side (away from ama) for more stable GM estimate.
+    # Find two adjacent points near equilibrium on the same side.
+
+    # Get points on negative side (away from ama, more linear behavior)
+    negative_points = [p for p in converged if p['heel_deg'] < 0]
+
+    gm_m = None
+
+    if len(negative_points) >= 2:
+        # Use slope between adjacent points closest to zero
+        negative_points.sort(key=lambda p: p['heel_deg'], reverse=True)  # Closest to 0 first
+        p1, p2 = negative_points[0], negative_points[1]
+
+        d_angle_rad = math.radians(p1['heel_deg'] - p2['heel_deg'])
+        d_gz_m = (p1.get('raw_gz_mm', p1['gz_mm']) - p2.get('raw_gz_mm', p2['gz_mm'])) / 1000.0
+
+        if abs(d_angle_rad) > 0.001:
+            # GM = dGZ/dθ (slope of GZ curve in radians)
+            gm_m = abs(d_gz_m / d_angle_rad)
+
+    # Fallback: try positive side if negative didn't work
+    if gm_m is None:
+        positive_points = [p for p in converged if p['heel_deg'] > 0]
+        if len(positive_points) >= 2:
+            positive_points.sort(key=lambda p: p['heel_deg'])  # Closest to 0 first
+            p1, p2 = positive_points[0], positive_points[1]
+
+            d_angle_rad = math.radians(p2['heel_deg'] - p1['heel_deg'])
+            d_gz_m = (p2.get('raw_gz_mm', p2['gz_mm']) - p1.get('raw_gz_mm', p1['gz_mm'])) / 1000.0
+
+            if abs(d_angle_rad) > 0.001:
+                gm_m = abs(d_gz_m / d_angle_rad)
+
+    # Sanity check
+    if gm_m is not None and not (0.1 < gm_m < 100.0):
+        gm_m = None
+
+    # For longitudinal GM, we'd need pitch data
+    # Typically GM_L >> GM_T for ships, estimate as 5-10x GM_T
+    gm_longitudinal_m = gm_m * 8.0 if gm_m else None
+
+    return {
+        'gm_m': round(gm_m, 4) if gm_m else None,
+        'gm_longitudinal_m': round(gm_longitudinal_m, 4) if gm_longitudinal_m else None
     }
 
 
@@ -157,6 +298,7 @@ def find_equilibrium_z_at_heel(fcstd_path: str, target_weight_N: float,
 
 def compute_gz_curve(fcstd_path: str, buoyancy_result: dict,
                      heel_angles: list = None,
+                     beam_m: float = None, loa_m: float = None,
                      verbose: bool = True) -> dict:
     """
     Compute the GZ curve by sweeping through heel angles.
@@ -170,6 +312,8 @@ def compute_gz_curve(fcstd_path: str, buoyancy_result: dict,
         fcstd_path: Path to FreeCAD design file
         buoyancy_result: Result from buoyancy equilibrium solver
         heel_angles: List of heel angles in degrees (default: -20 to 60)
+        beam_m: Overall beam in meters (for period estimates)
+        loa_m: Length overall in meters (for period estimates)
         verbose: Print progress
 
     Returns:
@@ -371,6 +515,34 @@ def compute_gz_curve(fcstd_path: str, buoyancy_result: dict,
             'converged_points': 0
         }
 
+    # Compute GM from GZ curve (use equilibrium roll angle for context)
+    eq_roll = eq['roll_deg']
+    gm_result = compute_gm_from_gz_curve(gz_data, eq_roll)
+    summary['gm_m'] = gm_result['gm_m']
+    summary['gm_longitudinal_m'] = gm_result['gm_longitudinal_m']
+
+    # Estimate natural periods if we have the needed dimensions
+    natural_periods = {}
+    if beam_m and loa_m:
+        # Get submerged volume from equilibrium point
+        zero_heel = next((p for p in gz_data if abs(p['heel_deg']) < 0.5
+                         and p.get('converged')), None)
+        if zero_heel:
+            submerged_vol = zero_heel['submerged_volume_liters']
+            draft_m = abs(eq_z) / 1000.0
+            natural_periods = estimate_natural_periods(
+                mass_kg=total_mass_kg,
+                submerged_volume_liters=submerged_vol,
+                draft_m=draft_m,
+                beam_m=beam_m,
+                loa_m=loa_m
+            )
+            if verbose:
+                print(f"  Natural period estimates (approximate):")
+                print(f"    Heave: {natural_periods.get('heave_period_s', 'N/A')} s")
+                print(f"    Roll:  {natural_periods.get('roll_period_s', 'N/A')} s")
+                print(f"    Pitch: {natural_periods.get('pitch_period_s', 'N/A')} s")
+
     return {
         'validator': 'gz',
         'summary': summary,
@@ -378,6 +550,7 @@ def compute_gz_curve(fcstd_path: str, buoyancy_result: dict,
         'weight_N': weight_N,
         'equilibrium_pose': eq,
         'center_of_gravity_body': cog_body,
+        'natural_periods': natural_periods,
         'gz_curve': gz_data
     }
 
@@ -486,6 +659,8 @@ def main():
                         help='Path to FCStd design file')
     parser.add_argument('--buoyancy', required=True,
                         help='Path to buoyancy.json artifact')
+    parser.add_argument('--parameters',
+                        help='Path to parameter.json artifact (for LOA/beam, used in period estimates)')
     parser.add_argument('--output', required=True,
                         help='Path to output JSON file')
     parser.add_argument('--output-png',
@@ -538,11 +713,25 @@ def main():
     if verbose:
         print(f"  Computing {len(heel_angles)} points from {args.min_heel}° to {args.max_heel}°")
 
+    # Load parameters for period estimates (optional)
+    beam_m = None
+    loa_m = None
+    if args.parameters and os.path.exists(args.parameters):
+        with open(args.parameters) as f:
+            params = json.load(f)
+        # Get beam and LOA in meters (stored in mm in parameter file)
+        beam_m = params.get('beam', 0) / 1000.0
+        loa_m = params.get('vaka_length', params.get('ama_length', 0)) / 1000.0
+        if verbose and beam_m and loa_m:
+            print(f"  Dimensions: LOA={loa_m:.1f}m, beam={beam_m:.1f}m")
+
     # Compute GZ curve
     result = compute_gz_curve(
         args.design,
         buoyancy_result,
         heel_angles=heel_angles,
+        beam_m=beam_m,
+        loa_m=loa_m,
         verbose=verbose
     )
 
@@ -560,6 +749,8 @@ def main():
             print(f"  Turtle angle (ama down): {summary['turtle_angle_deg']:.1f}°")
         if summary.get('capsize_angle_deg'):
             print(f"  Capsize angle (ama up): {summary['capsize_angle_deg']:.1f}°")
+        if summary.get('gm_m'):
+            print(f"  GM (transverse): {summary['gm_m']*100:.1f} cm")
 
     # Generate PNG plot
     png_path = args.output_png
