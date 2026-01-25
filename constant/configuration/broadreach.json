@@ -1,7 +1,9 @@
 {
   "configuration_name": "broadreach",
   "display_name": "Broad Reach",
+  "display_name_id": "Layar Searah Angin",
   "configuration_description": "Downwind sailing",
+  "configuration_description_id": "Berlayar searah angin",
   
   "required": [
     "render",
@@ -13,12 +15,17 @@
   "sail_camber_kuning": 3000,
   "sail_angle_biru": -30,
   "sail_angle_kuning": -30,
-  "rig_rotation_biru": 50,
-  "rig_rotation_kuning": 45,
+  "rig_rotation_biru": 110,
+  "rig_rotation_kuning": 100,
   "rudder_rotation_biru": 0,
   "rudder_raised_biru": false,
   "rudder_rotation_kuning": 0,
   "rudder_raised_kuning": false,
   "reefing_percentage_biru": 0,
-  "reefing_percentage_kuning": 0
+  "reefing_percentage_kuning": 0,
+
+  "wind_speed_kt": 15,
+  "wind_direction": 120,
+
+  "boat_speed_kt": 10
 }

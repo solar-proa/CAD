@@ -91,8 +91,10 @@ def create_camera_markers(params):
     mast_height = params.get('mast_height', 3000)
     freeboard = params.get('freeboard', 400)
 
+    camera_markers = doc.addObject("App::Part", "Camera Markers")
+
     # Navigation marker in cabin
-    cabin_cam = doc.addObject("Part::Feature", "Cabin_Cam")
+    cabin_cam = camera_markers.newObject("Part::Feature", "Cabin_Cam")
     cabin_cam.Shape = Part.makeSphere(10)
     cabin_cam.Placement = FreeCAD.Placement(
         FreeCAD.Base.Vector(vaka_x_offset, 0, 600),
@@ -102,7 +104,7 @@ def create_camera_markers(params):
     cabin_cam.ViewObject.ShapeColor = (1.0, 0.0, 0.0)  # Pink/red
 
     # Navigation marker on deck
-    deck_cam = doc.addObject("Part::Feature", "Deck_Cam")
+    deck_cam = camera_markers.newObject("Part::Feature", "Deck_Cam")
     deck_cam.Shape = Part.makeSphere(10)
     deck_cam.Placement = FreeCAD.Placement(
         FreeCAD.Base.Vector(vaka_x_offset, 0, 1700),
@@ -112,7 +114,7 @@ def create_camera_markers(params):
     deck_cam.ViewObject.ShapeColor = (1.0, 0.0, 0.0)
 
     # Navigation marker at mast top
-    mast_cam = doc.addObject("Part::Feature", "Mast_Cam")
+    mast_cam = camera_markers.newObject("Part::Feature", "Mast_Cam")
     mast_cam.Shape = Part.makeSphere(10)
     mast_cam.Placement = FreeCAD.Placement(
         FreeCAD.Base.Vector(vaka_x_offset, 0, mast_height),
@@ -122,7 +124,7 @@ def create_camera_markers(params):
     mast_cam.ViewObject.ShapeColor = (1.0, 0.0, 0.0)
 
     # Navigation marker below panels
-    below_cam = doc.addObject("Part::Feature", "Below_Cam")
+    below_cam = camera_markers.newObject("Part::Feature", "Below_Cam")
     below_cam.Shape = Part.makeSphere(10)
     below_cam.Placement = FreeCAD.Placement(
         FreeCAD.Base.Vector(vaka_x_offset - 1500, 0, 600),

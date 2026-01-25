@@ -194,7 +194,7 @@ def create_water_surface(doc, bounds, water_level=0.0):
     margin = 1000
     width = bounds['xmax'] - bounds['xmin'] + 2 * margin
     length = bounds['ymax'] - bounds['ymin'] + 2 * margin
-    thickness = 10
+    thickness = 25
 
     if width <= 0 or length <= 0 or math.isinf(width) or math.isinf(length):
         width = 15000

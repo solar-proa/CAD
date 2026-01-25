@@ -17,12 +17,26 @@ def rig(the_rig, params, sail_angle=0, sail_camber=10000, reefing_percentage=0):
     
     # mast
     
-    mast = the_rig.newObject("Part::Feature", "Mast (aluminum)")
-    mast.Shape = pipe(params['mast_diameter'],
-                      params['mast_thickness'],
-                      params['mast_height'])
-    mast.Placement = FreeCAD.Placement(
+    mast_lower_section = the_rig.newObject("Part::Feature", "Mast_lower_section (aluminum)")
+    mast_lower_section.Shape = pipe(params['mast_diameter'],
+                                    params['mast_thickness'],
+                                    params['mast_height'] / 2 +
+                                    params['mast_section_overlap'] / 2)
+    mast_lower_section.Placement = FreeCAD.Placement(
         Base.Vector(0, 0, params['mast_base_level']),
+        FreeCAD.Rotation(Base.Vector(0, 0, 0), 0))
+
+    mast_upper_section = the_rig.newObject("Part::Feature", "Mast_upper_section (aluminum)")
+    mast_upper_section.Shape = pipe(params['mast_diameter']
+                                    - params['mast_thickness'] * 2,
+                                    params['mast_thickness'],
+                                    params['mast_height'] / 2 +
+                                    params['mast_section_overlap'] / 2)
+    mast_upper_section.Placement = FreeCAD.Placement(
+        Base.Vector(0, 0,
+                    params['mast_base_level'] +
+                    params['mast_height'] / 2 -
+                    params['mast_section_overlap'] / 2),
         FreeCAD.Rotation(Base.Vector(0, 0, 0), 0))
 
     mast_cap = the_rig.newObject("Part::Feature", "Mast Cap (aluminum)")

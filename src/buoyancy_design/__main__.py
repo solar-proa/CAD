@@ -184,7 +184,7 @@ def create_water_surface(doc, bounds: dict, water_level: float = 0.0):
     margin = 1000  # mm
     width = bounds['xmax'] - bounds['xmin'] + 2 * margin
     length = bounds['ymax'] - bounds['ymin'] + 2 * margin
-    thickness = 10  # Thin slab for visibility
+    thickness = 25  # Slab thickness for visible waterline edge
 
     # Validate dimensions
     if width <= 0 or length <= 0 or math.isinf(width) or math.isinf(length):

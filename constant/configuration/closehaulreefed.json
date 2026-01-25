@@ -1,7 +1,9 @@
 {
   "configuration_name": "closehaulreefed",
   "display_name": "Close Haul Reefed",
+  "display_name_id": "Layar Melawan Angin (Reef)",
   "configuration_description": "Reefed for heavy weather",
+  "configuration_description_id": "Layar dikecilkan untuk cuaca buruk",
   
   "required": [
     "render",
@@ -20,5 +22,10 @@
   "rudder_rotation_kuning": 10,
   "rudder_raised_kuning": false,
   "reefing_percentage_biru": 60,
-  "reefing_percentage_kuning": 60
+  "reefing_percentage_kuning": 60,
+
+  "wind_speed_kt": 25,
+  "wind_direction": 45,
+
+  "boat_speed_kt": 10  
 }

@@ -1,7 +1,9 @@
 {
   "configuration_name": "goosewing",
   "display_name": "Goose Wing",
+  "display_name_id": "Sayap Angsa",
   "configuration_description": "Running downwind",
+  "configuration_description_id": "Berlari searah angin",
   
   "required": [
     "render",
@@ -20,5 +22,10 @@
   "rudder_rotation_kuning": 0,
   "rudder_raised_kuning": false,
   "reefing_percentage_biru": 0,
-  "reefing_percentage_kuning": 0
+  "reefing_percentage_kuning": 0,
+
+  "wind_speed_kt": 15,
+  "wind_direction": 180,
+
+  "boat_speed_kt": 10  
 }

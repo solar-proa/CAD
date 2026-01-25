@@ -1,7 +1,9 @@
 {
   "configuration_name": "closehaul",
   "display_name": "Close Haul",
+  "display_name_id": "Layar Melawan Angin",
   "configuration_description": "Upwind sailing",
+  "configuration_description_id": "Berlayar melawan angin",
   
   "required": [
     "render",
@@ -20,5 +22,10 @@
   "rudder_rotation_kuning": 10,
   "rudder_raised_kuning": false,
   "reefing_percentage_biru": 0,
-  "reefing_percentage_kuning": 0
+  "reefing_percentage_kuning": 0,
+
+  "wind_speed_kt": 15,
+  "wind_direction": 45,
+
+  "boat_speed_kt": 10  
 }

@@ -86,7 +86,7 @@
     "air": {
       "name": "Air",
       "color": [0.0, 0.0, 0.0],
-      "transparency": 1,
+      "transparency": 100,
       "display_mode": "Shaded",
       "density_kg_m3": 1.2,
       "description": "Trapped air volume (for buoyancy calculation)"
@@ -146,6 +146,22 @@
       "display_mode": "Shaded",
       "density_kg_m3": 1000,
       "description": "Fiberglass"
+    },
+    "wind_indicator": {
+      "name": "Wind Indicator",
+      "color": [0.0, 0.5, 1.0],
+      "transparency": 0,
+      "display_mode": "Shaded",
+      "density_kg_m3": 0,
+      "description": "Visual indicator for wind direction (zero mass, not a physical component)"
+    },
+    "boat_indicator": {
+      "name": "Boat Indicator",
+      "color": [0.7, 0.7, 0.0],
+      "transparency": 0,
+      "display_mode": "Shaded",
+      "density_kg_m3": 0,
+      "description": "Visual indicator for boat direction (zero mass, not a physical component)"
     }
   }
 }

@@ -53,11 +53,13 @@
   "brace_upper_offset": 100,
   "brace_lower_offset": 400,
   "pillar_brace_vertical_offset": 500,
+  "spine_length_extension": 300,
   
   "mast_diameter": 152.4,
   "mast_thickness": 6.35,
   "mast_height": 8500,
   "mast_distance_from_center_offset": 0,
+  "mast_section_overlap": 800,
   
   "mast_partner_width_offset": 200,
   "mast_partner_thickness": 50,
@@ -123,6 +125,7 @@
   "side_board_plate_thickness": 10,
   "side_board_plate_above_sole": 600,
 
-  "towing_ring_major_diameter": 120,
-  "towing_ring_minor_diameter": 20
+  "navigation_light_height": 100,
+  "navigation_light_diameter": 120
+    
 }

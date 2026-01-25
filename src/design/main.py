@@ -11,6 +11,7 @@ Arguments can be passed via:
 import sys
 import os
 import json
+import math
 
 # Add paths for imports
 sys.path.insert(0, os.path.dirname(__file__))
@@ -232,6 +233,68 @@ rudder_kuning.Placement = FreeCAD.Placement(
 vessel = doc.addObject("App::Part", "Vessel Central")
 central(vessel, params)
 
+arrows = doc.addObject("App::Part", "Direction Arrows")
+
+# boat arrow indicating boat movement direction (positive Y)
+# positioned outside the vaka hull on the outer side (negative X from vaka)
+if 'boat_speed_kt' in params:
+    boat_arrow_length = params['vaka_length'] / 3
+    boat_arrow_shaft_radius = params['vaka_length'] / 200
+    boat_arrow_shape = direction_arrow(boat_arrow_length,
+                                       shaft_radius=boat_arrow_shaft_radius)
+    boat_arrow = arrows.newObject("Part::Feature", "Boat_Arrow__boat_indicator")
+    boat_arrow.Shape = boat_arrow_shape
+    boat_arrow_x = params['vaka_x_offset']
+    boat_arrow_y = params['vaka_length'] / 2 + 200
+    boat_arrow_z = params['deck_base_level']
+    boat_arrow.Placement = FreeCAD.Placement(
+        Base.Vector(boat_arrow_x, boat_arrow_y, boat_arrow_z),
+        FreeCAD.Rotation(Base.Vector(1, 0, 0), -90))
+
+# wind arrows indicating wind movement direction
+# positioned so arrow tips form a square grid in plane perpendicular to wind
+def wind_arrows(y_offset, z_offset, h_offset):
+    wind_arrow_length = params['wind_speed_kt'] * params['vaka_length'] / 50
+    wind_arrow_shaft_radius = params['vaka_length'] / 200
+    wind_arrow_shape = direction_arrow(wind_arrow_length,
+                                       shaft_radius=wind_arrow_shaft_radius)
+    wind_arrow = arrows.newObject("Part::Feature", "Wind_Arrow__wind_indicator")
+    wind_arrow.Shape = wind_arrow_shape
+
+    wind_dir_rad = math.radians(params['wind_direction'])
+
+    # Step 1: Calculate tip position (in plane at mast, perpendicular to wind)
+    # Start at mast position, then apply perpendicular horizontal offset
+    # Arrow direction is (sin(wind_dir), -cos(wind_dir), 0) due to -90+wind_dir rotation
+    # Perpendicular direction is (cos(wind_dir), sin(wind_dir), 0)
+    tip_x = params['vaka_x_offset'] + h_offset * math.cos(wind_dir_rad)
+    tip_y = y_offset + h_offset * math.sin(wind_dir_rad)
+    tip_z = params['mast_height'] - z_offset
+
+    # Step 2: Calculate base position by moving back from tip along arrow direction
+    # Arrow points in direction (sin(wind_dir), -cos(wind_dir), 0)
+    wind_arrow_x = tip_x - wind_arrow_length * math.sin(wind_dir_rad)
+    wind_arrow_y = tip_y + wind_arrow_length * math.cos(wind_dir_rad)
+    wind_arrow_z = tip_z
+
+    rot1 = FreeCAD.Rotation(FreeCAD.Vector(0, 1, 0), 90)
+    rot2 = FreeCAD.Rotation(FreeCAD.Vector(0, 0, 1),
+                            - 90 + params['wind_direction'])
+    combined = rot2.multiply(rot1)
+    wind_arrow.Placement = FreeCAD.Placement(
+        Base.Vector(wind_arrow_x, wind_arrow_y, wind_arrow_z),
+        combined)
+
+if 'wind_speed_kt' in params:
+    spacing = params['vaka_length'] / 10
+    for i in range(0, 4):
+        for j in range(0, 4):
+            h_off = (j - 1.5) * spacing 
+            wind_arrows(params['mast_distance_from_center'],
+                        i * spacing, h_off)
+            wind_arrows(- params['mast_distance_from_center'],
+                        i * spacing, h_off)
+    
 # recompute before stats and rendering
 doc.recompute()
 
