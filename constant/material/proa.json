@@ -155,6 +155,14 @@
       "density_kg_m3": 0,
       "description": "Visual indicator for wind direction (zero mass, not a physical component)"
     },
+    "load": {
+      "name": "Load",
+      "color": [0.1, 0.0, 0.0],
+      "transparency": 0,
+      "display_mode": "Shaded",
+      "density_kg_m3": 100000,
+      "description": "Density of 100 kg per liter for loads on deck and sole"
+    },
     "boat_indicator": {
       "name": "Boat Indicator",
       "color": [0.7, 0.7, 0.0],

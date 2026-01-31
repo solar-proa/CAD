@@ -178,3 +178,4 @@ def central(vessel, params):
                     params['side_board_plate_above_sole']),
         FreeCAD.Rotation(Base.Vector(0, 0, 0), 0))
 
+

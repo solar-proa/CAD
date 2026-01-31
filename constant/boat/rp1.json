@@ -124,7 +124,17 @@
   "side_board_plate_above_sole": 500,
 
   "navigation_light_height": 80,
-  "navigation_light_diameter": 100
+  "navigation_light_diameter": 100,
     
+  "gusset_thickness": 7,
 
+  "tiller_rod_diameter": 8,
+  "tiller_rod_length": 1000,
+
+  "deck_load_y_offset": 2000,
+  "deck_load_in_kg": 200,
+  "sole_load_y_offset": 2000,
+  "sole_load_in_kg": 200,
+  "ama_load_y_offset": 200,
+  "ama_load_in_kg": 200
 }

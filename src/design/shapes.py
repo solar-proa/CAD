@@ -4,6 +4,76 @@ import math
 
 # maker functions for common shapes
 
+# gusset: create a triangular gusset by making
+#         a hollow box and cutting it diagonally
+
+def upper_right_gusset(length, thickness):
+    inner_length = length - 2 * thickness 
+    outer_box = Part.makeBox(length, length, length)
+    inner_box = Part.makeBox(inner_length, inner_length, inner_length)
+    inner_box.translate(Base.Vector(thickness, thickness, thickness))
+    hollow_box = outer_box.cut(inner_box)
+    
+    large = length * 3
+    cutter = Part.makeBox(large, large, large)
+    
+    cutter.translate(Base.Vector(-length, 0, -2 * length))
+    cutter.rotate(Base.Vector(0, 0, 0), Base.Vector(1, 0, 0), 45)
+    cutter.translate(Base.Vector(0, 0, length))
+    
+    return hollow_box.cut(cutter)
+
+def upper_left_gusset(length, thickness):
+    inner_length = length - 2 * thickness 
+    outer_box = Part.makeBox(length, length, length)
+    outer_box.translate(Base.Vector(0, -length, 0))
+    inner_box = Part.makeBox(inner_length, inner_length, inner_length)
+    inner_box.translate(Base.Vector(thickness, -length + thickness, thickness))
+    hollow_box = outer_box.cut(inner_box)
+    
+    large = length * 3
+    cutter = Part.makeBox(large, large, large)
+    
+    cutter.translate(Base.Vector(-length, -large, -2 * length))
+    cutter.rotate(Base.Vector(0, 0, 0), Base.Vector(1, 0, 0), -45)
+    cutter.translate(Base.Vector(0, 0, length))
+    
+    return hollow_box.cut(cutter)
+
+def lower_left_gusset(length, thickness):
+    inner_length = length - 2 * thickness 
+    outer_box = Part.makeBox(length, length, length)
+    outer_box.translate(Base.Vector(0 , -length, -length))
+    inner_box = Part.makeBox(inner_length, inner_length, inner_length)
+    inner_box.translate(Base.Vector(thickness, -length + thickness, -length + thickness))
+    hollow_box = outer_box.cut(inner_box)
+    
+    large = length * 3
+    cutter = Part.makeBox(large, large, large)
+    
+    cutter.translate(Base.Vector(-length, -large, -large + 2 * length))
+    cutter.rotate(Base.Vector(0, 0, 0), Base.Vector(1, 0, 0), 45)
+    cutter.translate(Base.Vector(0, 0, -length))
+    
+    return hollow_box.cut(cutter)
+
+def lower_right_gusset(length, thickness):
+    inner_length = length - 2 * thickness 
+    outer_box = Part.makeBox(length, length, length)
+    outer_box.translate(Base.Vector(0, 0, -length))
+    inner_box = Part.makeBox(inner_length, inner_length, inner_length)
+    inner_box.translate(Base.Vector(thickness, thickness, -length + thickness))
+    hollow_box = outer_box.cut(inner_box)
+    
+    large = length * 3
+    cutter = Part.makeBox(large, large, large)
+    
+    cutter.translate(Base.Vector(-length, 0, -large + 2 * length))
+    cutter.rotate(Base.Vector(0, 0, 0), Base.Vector(1, 0, 0), -45)
+    cutter.translate(Base.Vector(0, 0, -length))
+    
+    return hollow_box.cut(cutter)
+
 def horn_cleat(length, width, height, horn_angle=15):
     """Create a horn cleat for mooring/towing lines.
 

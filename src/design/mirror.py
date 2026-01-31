@@ -35,6 +35,7 @@ def mirror(side, params):
 
     for i in range(0, params['panels_longitudinal'] // 2):
         for j in range(0, params['akas_per_panel']):
+            # aka_y: center of aka in y direction
             aka_y = aka_y_position(params, i, j)
 
             aka = side.newObject("Part::Feature", f"Aka_{aka_counter} (aluminum)")
@@ -84,6 +85,121 @@ def mirror(side, params):
                             params['ama_thickness']),
                 FreeCAD.Rotation(Base.Vector(0, 0, 0), 0))
 
+            # gussets
+            spine_to_aka_gusset_right = side.newObject(
+                "Part::Feature",
+                f"Gusset_spine_to_aka_right_{aka_counter} (aluminum)")
+            spine_to_aka_gusset_right.Shape = upper_right_gusset(
+                    params['spine_width'], params['gusset_thickness'])
+            spine_to_aka_gusset_right.Placement = FreeCAD.Placement(
+                Base.Vector(- params['pillar_width'] / 2,
+                            aka_y + params['aka_width'] / 2,
+                            params['aka_base_level']),
+                FreeCAD.Rotation(Base.Vector(0, 0, 0), 0))
+
+            spine_to_aka_gusset_left = side.newObject(
+                "Part::Feature",
+                f"Gusset_spine_to_aka_left_{aka_counter} (aluminum)")
+            spine_to_aka_gusset_left.Shape = upper_left_gusset(
+                params['spine_width'], params['gusset_thickness'])
+            spine_to_aka_gusset_left.Placement = FreeCAD.Placement(
+                Base.Vector(- params['pillar_width'] / 2,
+                            aka_y - params['aka_width'] / 2,
+                            params['aka_base_level']),
+                FreeCAD.Rotation(Base.Vector(0, 0, 0), 0))
+            
+            pillar_to_spine_gusset_right = side.newObject(
+                "Part::Feature",
+                f"Gusset_pillar_to_spine_right_{aka_counter} (aluminum)")
+            pillar_to_spine_gusset_right.Shape = (
+                lower_right_gusset(
+                    params['spine_width'], params['gusset_thickness']))
+            pillar_to_spine_gusset_right.Placement = FreeCAD.Placement(
+                Base.Vector(- params['pillar_width'] / 2,
+                            aka_y + params['aka_width'] / 2,
+                            params['ama_thickness'] + params['pillar_height']),
+                FreeCAD.Rotation(Base.Vector(0, 0, 0), 0))
+
+            pillar_to_spine_gusset_left = side.newObject(
+                "Part::Feature",
+                f"Gusset_pillar_to_spine_left_{aka_counter} (aluminum)")
+            pillar_to_spine_gusset_left.Shape = lower_left_gusset(
+                params['spine_width'], params['gusset_thickness'])
+            pillar_to_spine_gusset_left.Placement = FreeCAD.Placement(
+                Base.Vector(- params['pillar_width'] / 2,
+                            aka_y - params['aka_width'] / 2,
+                            params['ama_thickness'] + params['pillar_height']),
+                FreeCAD.Rotation(Base.Vector(0, 0, 0), 0))
+
+            pillar_to_ama_top_gusset_right = side.newObject(
+                "Part::Feature",
+                f"Gusset_pillar_to_ama_top_right_{aka_counter} (aluminum)")
+            pillar_to_ama_top_gusset_right.Shape = (
+                upper_right_gusset(
+                    params['spine_width'], params['gusset_thickness']))
+            pillar_to_ama_top_gusset_right.Placement = FreeCAD.Placement(
+                Base.Vector(- params['pillar_width'] / 2,
+                            aka_y + params['aka_width'] / 2,
+                            params['ama_diameter']),
+                FreeCAD.Rotation(Base.Vector(0, 0, 0), 0))
+
+            pillar_to_ama_top_gusset_left = side.newObject(
+                "Part::Feature",
+                f"Gusset_pillar_to_ama_top_left_{aka_counter} (aluminum)")
+            pillar_to_ama_top_gusset_left.Shape = upper_left_gusset(
+                params['spine_width'], params['gusset_thickness'])
+            pillar_to_ama_top_gusset_left.Placement = FreeCAD.Placement(
+                Base.Vector(- params['pillar_width'] / 2,
+                            aka_y - params['aka_width'] / 2,
+                            params['ama_diameter']),
+                FreeCAD.Rotation(Base.Vector(0, 0, 0), 0))
+
+            pillar_to_ama_bottom_gusset_right = side.newObject(
+                "Part::Feature",
+                f"Gusset_pillar_to_ama_bottom_right_{aka_counter} (aluminum)")
+            pillar_to_ama_bottom_gusset_right.Shape = (
+                upper_right_gusset(
+                    params['spine_width'], params['gusset_thickness']))
+            pillar_to_ama_bottom_gusset_right.Placement = FreeCAD.Placement(
+                Base.Vector(- params['pillar_width'] / 2,
+                            aka_y + params['aka_width'] / 2,
+                            params['ama_thickness']),
+                FreeCAD.Rotation(Base.Vector(0, 0, 0), 0))
+
+            pillar_to_ama_bottom_gusset_left = side.newObject(
+                "Part::Feature",
+                f"Gusset_pillar_to_ama_bottom_left_{aka_counter} (aluminum)")
+            pillar_to_ama_bottom_gusset_left.Shape = upper_left_gusset(
+                params['spine_width'], params['gusset_thickness'])
+            pillar_to_ama_bottom_gusset_left.Placement = FreeCAD.Placement(
+                Base.Vector(- params['pillar_width'] / 2,
+                            aka_y - params['aka_width'] / 2,
+                            params['ama_thickness']),
+                FreeCAD.Rotation(Base.Vector(0, 0, 0), 0))
+
+            pillar_to_ama_inside_gusset_right = side.newObject(
+                "Part::Feature",
+                f"Gusset_pillar_to_ama_inside_right_{aka_counter} (aluminum)")
+            pillar_to_ama_inside_gusset_right.Shape = (
+                lower_right_gusset(
+                    params['spine_width'], params['gusset_thickness']))
+            pillar_to_ama_inside_gusset_right.Placement = FreeCAD.Placement(
+                Base.Vector(- params['pillar_width'] / 2,
+                            aka_y + params['aka_width'] / 2,
+                            params['ama_diameter'] - params['ama_thickness']),
+                FreeCAD.Rotation(Base.Vector(0, 0, 0), 0))
+
+            pillar_to_ama_inside_gusset_left = side.newObject(
+                "Part::Feature",
+                f"Gusset_pillar_to_ama_inside_left_{aka_counter} (aluminum)")
+            pillar_to_ama_inside_gusset_left.Shape = lower_left_gusset(
+                params['spine_width'], params['gusset_thickness'])
+            pillar_to_ama_inside_gusset_left.Placement = FreeCAD.Placement(
+                Base.Vector(- params['pillar_width'] / 2,
+                            aka_y - params['aka_width'] / 2,
+                            params['ama_diameter'] - params['ama_thickness']),
+                FreeCAD.Rotation(Base.Vector(0, 0, 0), 0))
+                
             # Pillar-to-aka diagonal braces (one on each side) at 45 degrees
 
             pillar_x = - params['pillar_width'] / 2
@@ -677,4 +793,29 @@ def mirror(side, params):
                     params['ama_length'] / 2 - params['ama_cone_length'],
                     params['ama_diameter'] / 2),
         FreeCAD.Rotation(Base.Vector(1, 0, 0), 270))
+
+    # loads on deck, sole, and ama
     
+    load = side.newObject("Part::Feature", "Deck Load (load)")
+    load.Shape = Part.makeBox(100, 100, params['deck_load_in_kg'])
+    load.Placement = FreeCAD.Placement(
+        Base.Vector(params['vaka_x_offset'] - 50,
+                    params['deck_load_y_offset'] - 50,
+                    params['deck_level']),
+        FreeCAD.Rotation(Base.Vector(0, 0, 0), 0))
+
+    load = side.newObject("Part::Feature", "Sole Load (load)")
+    load.Shape = Part.makeBox(100, 100, params['sole_load_in_kg'])
+    load.Placement = FreeCAD.Placement(
+        Base.Vector(params['vaka_x_offset'] - 50,
+                    params['sole_load_y_offset'] - 50,
+                    params['mast_base_level']),
+        FreeCAD.Rotation(Base.Vector(0, 0, 0), 0))
+
+    load = side.newObject("Part::Feature", "Ama Load (load)")
+    load.Shape = Part.makeBox(100, 100, params['ama_load_in_kg'])
+    load.Placement = FreeCAD.Placement(
+        Base.Vector(- 50,
+                    params['ama_load_y_offset'] - 50,
+                    params['deck_level']),
+        FreeCAD.Rotation(Base.Vector(0, 0, 0), 0))
