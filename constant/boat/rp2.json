@@ -138,5 +138,7 @@
   "sole_load_y_offset": 2000,
   "sole_load_in_kg": 200,
   "ama_load_y_offset": 200,
-  "ama_load_in_kg": 50
+  "ama_load_in_kg": 50,
+
+  "lines_plan_waterline_height": 0
 }

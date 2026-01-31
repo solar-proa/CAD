@@ -125,6 +125,8 @@ help:
 	@echo "  make buoyancy-design        - Position boat at equilibrium with water surface"
 	@echo "  make buoyancy-render        - Render images of boat at equilibrium"
 	@echo "  make validate-structure     - Validate structural integrity (all load cases)"
+	@echo "  make lines                  - Generate lines plan (TechDraw with sections)"
+	@echo "  make lines-pdf              - Compile lines plan LaTeX to PDF"
 	@echo ""
 	@echo "Parameter Targets:"
 	@echo "  make parameter              - Compute and save parameter to artifacts/"
@@ -524,3 +526,58 @@ $(VALIDATE_STRUCTURE_ARTIFACT): $(PARAMETER_ARTIFACT) $(MASS_ARTIFACT) $(GZ_ARTI
 .PHONY: validate-structure
 validate-structure: $(VALIDATE_STRUCTURE_ARTIFACT)
 	@echo "✓ Structural validation complete for $(BOAT).$(CONFIGURATION)"
+
+# ==============================================================================
+# LINES PLAN - TRADITIONAL NAVAL ARCHITECTURE DRAWINGS
+# ==============================================================================
+
+LINES_DIR := $(SRC_DIR)/lines
+LINES_SOURCE := $(wildcard $(LINES_DIR)/*.py)
+LINES_ARTIFACT := $(ARTIFACT_DIR)/$(BOAT).$(CONFIGURATION).lines.FCStd
+LINES_TEX := $(ARTIFACT_DIR)/$(BOAT).$(CONFIGURATION).lines.tex
+LINES_PDF := $(ARTIFACT_DIR)/$(BOAT).$(CONFIGURATION).lines.pdf
+
+$(LINES_ARTIFACT) $(LINES_TEX): $(DESIGN_ARTIFACT) $(PARAMETER_ARTIFACT) $(LINES_SOURCE) | $(ARTIFACT_DIR)
+	@echo "Generating lines plan: $(BOAT).$(CONFIGURATION)"
+	@if [ "$(UNAME)" = "Darwin" ]; then \
+		bash $(LINES_DIR)/lines_mac.sh \
+			"$(DESIGN_ARTIFACT)" \
+			"$(PARAMETER_ARTIFACT)" \
+			"$(ARTIFACT_DIR)" \
+			"$(FREECAD_APP)"; \
+	else \
+		PYTHONPATH=$(PWD) \
+		DESIGN_FILE=$(DESIGN_ARTIFACT) \
+		PARAMETER_FILE=$(PARAMETER_ARTIFACT) \
+		OUTPUT_DIR=$(ARTIFACT_DIR) \
+		$(FREECAD_PYTHON) -m src.lines; \
+	fi
+
+.PHONY: lines
+lines: $(LINES_ARTIFACT)
+	@echo "✓ Lines plan complete for $(BOAT).$(CONFIGURATION)"
+
+$(LINES_PDF): $(LINES_TEX)
+	@echo "Converting SVGs to PDF for LaTeX inclusion..."
+	@for svg in $(ARTIFACT_DIR)/$(BOAT).$(CONFIGURATION).lines.*.svg; do \
+		if [ -f "$$svg" ]; then \
+			pdf=$${svg%.svg}.pdf; \
+			if command -v rsvg-convert >/dev/null 2>&1; then \
+				rsvg-convert -f pdf -o "$$pdf" "$$svg" 2>/dev/null || true; \
+			elif command -v inkscape >/dev/null 2>&1; then \
+				inkscape "$$svg" --export-filename="$$pdf" 2>/dev/null || true; \
+			fi; \
+		fi; \
+	done
+	@echo "Compiling lines plan LaTeX: $(BOAT).$(CONFIGURATION)"
+	@cd $(ARTIFACT_DIR) && pdflatex -interaction=nonstopmode $(notdir $(LINES_TEX)) || true
+	@cd $(ARTIFACT_DIR) && pdflatex -interaction=nonstopmode $(notdir $(LINES_TEX)) || true
+	@if [ -f "$(LINES_PDF)" ]; then \
+		echo "✓ Lines plan PDF: $(LINES_PDF)"; \
+	else \
+		echo "Warning: PDF generation failed (pdflatex may not be installed)"; \
+	fi
+
+.PHONY: lines-pdf
+lines-pdf: $(LINES_PDF)
+	@echo "✓ Lines plan PDF complete for $(BOAT).$(CONFIGURATION)"
