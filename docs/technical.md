@@ -130,7 +130,7 @@ The entire project is open source under permissive licenses:
 - **CAD Models:** [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
 - **Code:** MIT License
 
-**GitHub Repository:** [github.com/henz/SolarProa](https://github.com/henz/SolarProa)
+**GitHub Repository:** [github.com/solar-proa/CAD](https://github.com/solar-proa/CAD)
 
 Contributions, feedback, and forks are welcome.
 
