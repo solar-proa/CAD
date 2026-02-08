@@ -86,7 +86,7 @@ def central(vessel, params):
         FreeCAD.Rotation(Base.Vector(0, 0, 1), 90))
     
     # hull: exterior from sole base level (bottom height) upwards
-    #       to gunwale base level
+    #       to clamp base level
     hull = vessel.newObject("Part::Feature", "Hull (fiberglass)")
     hull.Shape = elliptical_pipe(params['vaka_length'],
                                  params['vaka_width'],
@@ -112,15 +112,15 @@ def central(vessel, params):
                     params['bottom_height'] + params['sole_thickness']),
         FreeCAD.Rotation(Base.Vector(0, 0, 1), 90))
 
-    gunwale = vessel.newObject("Part::Feature", "Gunwale (wood)")
-    gunwale.Shape = elliptical_pipe(params['vaka_length'],
+    clamp = vessel.newObject("Part::Feature", "Clamp (wood)")
+    clamp.Shape = elliptical_pipe(params['vaka_length'],
                                     params['vaka_width'],
-                                    params['gunwale_width'],
-                                    params['gunwale_height'])
-    gunwale.Placement = FreeCAD.Placement(
+                                    params['clamp_width'],
+                                    params['clamp_height'])
+    clamp.Placement = FreeCAD.Placement(
         Base.Vector(params['vaka_x_offset'],
                     0,
-                    params['gunwale_base_level']),
+                    params['clamp_base_level']),
         FreeCAD.Rotation(Base.Vector(0, 0, 1), 90))
 
     outer_crossdeck_stanchion = vessel.newObject("Part::Feature",

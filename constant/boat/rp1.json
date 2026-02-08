@@ -39,10 +39,12 @@
   "sole_thickness": 9,
   "bottom_height_inches": 6,
    
-  "crossdeck_width": 700,
-  
-  "gunwale_width_inches": 3,
-  "gunwale_height_inches": 2,
+  "clamp_width_inches": 3,
+  "clamp_height_inches": 2,
+
+  "frame_width_inches": 3,
+  "frame_depth_inches": 2,
+
   "freeboard": 600,
   
   "stanchion_diameter": 20,

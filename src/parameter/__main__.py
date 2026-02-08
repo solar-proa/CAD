@@ -22,8 +22,10 @@ def compute_derived(base: Dict[str, Any]) -> Dict[str, Any]:
     # Derived dimensions
     params['mm_in_one_inch'] = mm_in_one_inch
     params['stringer_width'] = base['stringer_width_inches'] * mm_in_one_inch
-    params['gunwale_width'] = base['gunwale_width_inches'] * mm_in_one_inch
-    params['gunwale_height'] = base['gunwale_height_inches'] * mm_in_one_inch
+    params['clamp_width'] = base['clamp_width_inches'] * mm_in_one_inch
+    params['clamp_height'] = base['clamp_height_inches'] * mm_in_one_inch
+    params['frame_width'] = base['frame_width_inches'] * mm_in_one_inch
+    params['frame_depth'] = base['frame_depth_inches'] * mm_in_one_inch
     params['bottom_height'] = base['bottom_height_inches'] * mm_in_one_inch
     
     # Aka length depends on panels and deck
@@ -34,6 +36,7 @@ def compute_derived(base: Dict[str, Any]) -> Dict[str, Any]:
     params['bottom_thickness'] = base['vaka_thickness']
     
     # Crossdeck dimensions
+    params['crossdeck_width'] = base['panel_width'] / base['akas_per_panel']
     params['crossdeck_thickness'] = base['deck_thickness']
     params['crossdeck_length'] = (base['panels_transversal'] * base['panel_length'] +
                                   (base['deck_width'] - base['vaka_width']) / 2 +
@@ -44,22 +47,22 @@ def compute_derived(base: Dict[str, Any]) -> Dict[str, Any]:
     # - Single aka: centered in panel at crossdeck_width/2 + panel_width/2
     # - Multiple akas: at rim distance from panel edge at crossdeck_width/2 + aka_rim
     if base.get('akas_per_panel', 1) == 1:
-        first_aka_y = base['crossdeck_width'] / 2 + base['panel_width'] / 2
+        first_aka_y = params['crossdeck_width'] / 2 + base['panel_width'] / 2
     else:
-        first_aka_y = base['crossdeck_width'] / 2 + base['aka_rim']
+        first_aka_y = params['crossdeck_width'] / 2 + base['aka_rim']
     params['cockpit_length'] = 2 * first_aka_y - base['aka_width']
     
     # Panel stringer calculations
     params['panel_stringer_offset'] = (base['panel_length'] / 4 - 
                                        params['stringer_width'] / 2)
-    params['panel_stringer_length'] = (base['crossdeck_width'] + 
+    params['panel_stringer_length'] = (params['crossdeck_width'] + 
                                        base['panels_longitudinal'] * base['panel_width'])
     
     # Vertical levels (build up from bottom)
-    params['gunwale_base_level'] = (params['bottom_height'] + base['freeboard'] - 
-                                    params['gunwale_height'])
-    params['overhead_base_level'] = (params['gunwale_base_level'] + 
-                                     params['gunwale_height'])
+    params['clamp_base_level'] = (params['bottom_height'] + base['freeboard'] - 
+                                    params['clamp_height'])
+    params['overhead_base_level'] = (params['clamp_base_level'] + 
+                                     params['clamp_height'])
     params['aka_base_level'] = (params['overhead_base_level'] + 
                                 base['overhead_thickness'])
     params['stringer_base_level'] = params['aka_base_level'] + base['aka_height']
@@ -72,7 +75,7 @@ def compute_derived(base: Dict[str, Any]) -> Dict[str, Any]:
     params['spine_width'] = base['aka_width']
     params['spine_base_level'] = params['aka_base_level'] - params['spine_width']
     params['spine_length'] = (base['panel_width'] * base['panels_longitudinal'] + 
-                              base['crossdeck_width'] + base['spine_length_extension'])
+                              params['crossdeck_width'] + base['spine_length_extension'])
     
     # Beam calculation
     params['beam'] = (params['aka_length'] + base['aka_cap_thickness'] - 
@@ -88,13 +91,13 @@ def compute_derived(base: Dict[str, Any]) -> Dict[str, Any]:
     last_panel_index = base['panels_longitudinal'] // 2 - 1
     last_aka_index = base.get('akas_per_panel', 1) - 1
     if base.get('akas_per_panel', 1) == 1:
-        last_aka_y = (base['crossdeck_width'] / 2
+        last_aka_y = (params['crossdeck_width'] / 2
                       + last_panel_index * base['panel_width']
                       + base['panel_width'] / 2)
     else:
         aka_spacing = ((base['panel_width'] - 2 * base['aka_rim'])
                        / (base['akas_per_panel'] - 1))
-        last_aka_y = (base['crossdeck_width'] / 2
+        last_aka_y = (params['crossdeck_width'] / 2
                       + last_panel_index * base['panel_width']
                       + base['aka_rim'] + last_aka_index * aka_spacing)
     
