@@ -118,6 +118,7 @@ help:
 	@echo "  make required-all           - Run all required stages for all boats and configurations"
 	@echo "                                Required stages are specified in constants/configurations"
 	@echo "  make design                 - Generate single design (BOAT=$(BOAT) CONFIGURATION=$(CONFIGURATION))"
+	@echo "  make cables                 - Add power cables to design"
 	@echo "  make color                  - Apply color scheme to design (MATERIAL=$(MATERIAL))"
 	@echo "  make step                   - Export design to STEP format (geometry only)"
 	@echo "  make render                 - Render images (applies colors then renders)"
@@ -291,6 +292,32 @@ $(DESIGN_ARTIFACT): $(PARAMETER_ARTIFACT) $(DESIGN_SOURCE) | $(DESIGN_DIR)
 
 .PHONY: design
 design: $(DESIGN_ARTIFACT)
+
+# ==============================================================================
+# ADD POWER CABLES
+# ==============================================================================
+
+CABLES_DIR := $(SRC_DIR)/power_cables
+CABLES_SOURCE := $(wildcard $(CABLES_DIR)/*.py)
+CABLES_ARTIFACT := $(ARTIFACT_DIR)/$(BOAT).$(CONFIGURATION).cables.FCStd
+
+$(CABLES_ARTIFACT): $(DESIGN_ARTIFACT) $(CABLES_SOURCE) $(PARAMETER_ARTIFACT) | $(ARTIFACT_DIR)
+	@echo "Adding power cables to: $(BOAT).$(CONFIGURATION)"
+	@if [ "$(UNAME)" = "Darwin" ]; then \
+		bash $(CABLES_DIR)/power_cables_mac.sh \
+			--design "$(DESIGN_ARTIFACT)" \
+			--params "$(PARAMETER_ARTIFACT)" \
+			--outputdesign "$(CABLES_ARTIFACT)"; \
+	else \
+		$(FREECAD_PYTHON) -m src.power_cables \
+			--design "$(DESIGN_ARTIFACT)" \
+			--params "$(PARAMETER_ARTIFACT)" \
+			--outputdesign "$(CABLES_ARTIFACT)"; \
+	fi
+	@echo "✓ Cables added: $(CABLES_ARTIFACT)"
+
+.PHONY: cables
+cables: $(CABLES_ARTIFACT)
 
 # ==============================================================================
 # COLOR THE DESIGNS

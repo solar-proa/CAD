@@ -142,5 +142,8 @@
   "ama_load_y_offset": 200,
   "ama_load_in_kg": 50,
 
-  "lines_plan_waterline_height": 0
+  "lines_plan_waterline_height": 0,
+
+  "strings_per_array": 2,
+  "panels_per_string": 4
 }
