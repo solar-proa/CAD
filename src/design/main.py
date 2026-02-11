@@ -80,6 +80,10 @@ print("Importing shapes...")
 if 'shapes' in sys.modules: del sys.modules['shapes']
 from shapes import *
 
+print("Importing central...")
+if 'central' in sys.modules: del sys.modules['central']
+from central import *
+
 print("Importing rotating...")
 if 'rotating' in sys.modules: del sys.modules['rotating']
 from rotating import *
@@ -87,10 +91,6 @@ from rotating import *
 print("Importing mirror...")
 if 'mirror' in sys.modules: del sys.modules['mirror']
 from mirror import *
-
-print("Importing central...")
-if 'central' in sys.modules: del sys.modules['central']
-from central import *
 
 print("All imports complete")
 
@@ -150,6 +150,11 @@ except Exception as e:
     traceback.print_exc()
     raise
 
+# boat: central unmirrored components: hull, sole, etc
+
+vessel = doc.addObject("App::Part", "Vessel Central")
+central(vessel, params)
+
 # mirrored parts: Biru (blue) side is on the right as seen
 # standing on the vaka facing the ama
 
@@ -201,9 +206,8 @@ rig(rig_kuning, params, sail_angle=params['sail_angle_kuning'],
 # rudder_biru with rudder_rotation_biru
 
 # Calculate last aka Y position for rudder placement
-last_panel_index = params['panels_longitudinal'] // 2 - 1
-last_aka_index = params['akas_per_panel'] - 1
-last_aka_y = aka_y_position(params, last_panel_index, last_aka_index)
+
+last_aka_y = (params['akas_per_panel'] * params['panels_longitudinal'] / 2 + 1) * params['panel_width']
 
 rudder_biru = doc.addObject("App::Part", "Rudder Biru")
 rudder(rudder_biru, params, params['rudder_raised_biru'],
@@ -220,11 +224,6 @@ rudder(rudder_kuning, params, params['rudder_raised_kuning'],
                 - params['rudder_distance_from_vaka'],
        y_offset=- last_aka_y,
        z_rotation=params['rudder_rotation_kuning'])
-
-# boat: central unmirrored components: hull, sole, etc
-
-vessel = doc.addObject("App::Part", "Vessel Central")
-central(vessel, params)
 
 arrows = doc.addObject("App::Part", "Direction Arrows")
 
