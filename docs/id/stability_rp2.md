@@ -1,6 +1,7 @@
 ---
 layout: default
 title: Analisis Stabilitas & Daya Apung - Roti Proa II
+description: Kapal Hibrida Bertenaga Angin-Surya untuk Daerah Tropis
 lang: id
 ---
 

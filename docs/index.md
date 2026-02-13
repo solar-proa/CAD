@@ -120,6 +120,13 @@ system for Roti Proa II.
   <img src="{{ '/logos/dexmarine.png' | relative_url }}" alt="Dexmarine - Marine Supply Service" style="width: 20%; max-width: 1200px; height: auto; border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.15); display: block; margin: 0 auto;">
 </div>
 
+Our Solar Panel Partners are [Rezeca Renewables Pte Ltd](https://rezeca.com/) and [Aiko Solar Energy Co., Ltd.](https://aikosolar.com/), who generously supply the solar panels for our Minimal Viable Product [Roti Proa II](/rp2.html).
+
+<div style="display: flex; justify-content: center; align-items: center; gap: 2em; margin-bottom: 3em;">
+  <img src="{{ '/logos/rezeca.svg' | relative_url }}" alt="Rezeca Renewables Pte Ltd" style="width: 20%; max-width: 300px; height: auto; border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.15);">
+  <img src="{{ '/logos/aiko.png' | relative_url }}" alt="Aiko Solar Energy Co., Ltd." style="width: 20%; max-width: 300px; height: auto; border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.15);">
+</div>
+
 We welcome further strategic partners for:
 
 - **Field testing collaboration** and operational feedback
