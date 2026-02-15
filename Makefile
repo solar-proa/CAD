@@ -19,10 +19,16 @@ ifeq ($(UNAME),Darwin)
 	FREECAD_CMD := $(FREECAD_APP) --console
 	FREECAD_PYTHON := $(FREECAD_BUNDLE)/Contents/Resources/bin/python
 	FILTER_NOISE := 2>&1 | grep -v "3DconnexionNavlib" | grep -v "^$$"
+	# Conda env with FreeCAD (for geometry modules via shipshape)
+	CONDA_PYTHON := /Users/henz/anaconda3/envs/freecad/bin/python
+	FREECAD_LIB := /Users/henz/anaconda3/envs/freecad/lib
 else
 	FREECAD_CMD := xvfb-run -a freecadcmd
 	FREECAD_PYTHON := freecad-python
 	FILTER_NOISE :=
+	# On Linux (CI), use freecad-python wrapper directly
+	CONDA_PYTHON := $(FREECAD_PYTHON)
+	FREECAD_LIB :=
 endif
 
 # ==============================================================================
@@ -327,19 +333,12 @@ color: $(COLOR_ARTIFACT)
 # FIND THE MASS OF THE PARTS AND COMPUTE THE TOTAL MASS
 # ==============================================================================
 
-MASS_DIR := $(SRC_DIR)/mass
-MASS_SOURCE := $(wildcard $(MASS_DIR)/*.py)
 MASS_ARTIFACT := $(ARTIFACT_DIR)/$(BOAT).$(CONFIGURATION).mass.json
 
-$(MASS_ARTIFACT): $(DESIGN_ARTIFACT) $(MATERIAL_FILE) $(MASS_SOURCE) | $(ARTIFACT_DIR)
+$(MASS_ARTIFACT): $(DESIGN_ARTIFACT) $(MATERIAL_FILE) | $(ARTIFACT_DIR)
 	@echo "Running mass analysis: $(BOAT).$(CONFIGURATION)"
-	@if [ "$(UNAME)" = "Darwin" ]; then \
-		PYTHONPATH=$(FREECAD_BUNDLE)/Contents/Resources/lib:$(FREECAD_BUNDLE)/Contents/Resources/Mod:$(PWD) \
-		DYLD_LIBRARY_PATH=$(FREECAD_BUNDLE)/Contents/Frameworks:$(FREECAD_BUNDLE)/Contents/Resources/lib \
-		$(FREECAD_PYTHON) -m src.mass --design $(DESIGN_ARTIFACT) --materials $(MATERIAL_FILE) --output $@; \
-	else \
-		PYTHONPATH=$(PWD):$(PWD)/src/design $(FREECAD_PYTHON) -m src.mass --design $(DESIGN_ARTIFACT) --materials $(MATERIAL_FILE) --output $@; \
-	fi
+	@PYTHONPATH=$(FREECAD_LIB):$(PWD) $(CONDA_PYTHON) -m shipshape.mass \
+		--design $(DESIGN_ARTIFACT) --materials $(MATERIAL_FILE) --output $@
 
 .PHONY: mass
 mass: $(MASS_ARTIFACT)
@@ -403,27 +402,15 @@ step: $(STEP_ARTIFACT)
 # BUOYANCY EQUILIBRIUM ANALYSIS
 # ==============================================================================
 
-BUOYANCY_DIR := $(SRC_DIR)/buoyancy
-BUOYANCY_SOURCE := $(wildcard $(BUOYANCY_DIR)/*.py) $(wildcard $(SRC_DIR)/physics/*.py)
 BUOYANCY_ARTIFACT := $(ARTIFACT_DIR)/$(BOAT).$(CONFIGURATION).buoyancy.json
 
-$(BUOYANCY_ARTIFACT): $(DESIGN_ARTIFACT) $(MASS_ARTIFACT) $(MATERIAL_FILE) $(BUOYANCY_SOURCE) | $(ARTIFACT_DIR)
+$(BUOYANCY_ARTIFACT): $(DESIGN_ARTIFACT) $(MASS_ARTIFACT) $(MATERIAL_FILE) | $(ARTIFACT_DIR)
 	@echo "Running buoyancy analysis: $(BOAT).$(CONFIGURATION)"
-	@if [ "$(UNAME)" = "Darwin" ]; then \
-		PYTHONPATH=$(FREECAD_BUNDLE)/Contents/Resources/lib:$(FREECAD_BUNDLE)/Contents/Resources/Mod:$(PWD) \
-		DYLD_LIBRARY_PATH=$(FREECAD_BUNDLE)/Contents/Frameworks:$(FREECAD_BUNDLE)/Contents/Resources/lib \
-		$(FREECAD_PYTHON) -m src.buoyancy \
-			--design $(DESIGN_ARTIFACT) \
-			--mass $(MASS_ARTIFACT) \
-			--materials $(MATERIAL_FILE) \
-			--output $@; \
-	else \
-		PYTHONPATH=$(PWD) $(FREECAD_PYTHON) -m src.buoyancy \
-			--design $(DESIGN_ARTIFACT) \
-			--mass $(MASS_ARTIFACT) \
-			--materials $(MATERIAL_FILE) \
-			--output $@; \
-	fi
+	@PYTHONPATH=$(FREECAD_LIB):$(PWD) $(CONDA_PYTHON) -m shipshape.buoyancy \
+		--design $(DESIGN_ARTIFACT) \
+		--mass $(MASS_ARTIFACT) \
+		--materials $(MATERIAL_FILE) \
+		--output $@
 
 .PHONY: buoyancy
 buoyancy: $(BUOYANCY_ARTIFACT)
@@ -433,30 +420,17 @@ buoyancy: $(BUOYANCY_ARTIFACT)
 # GZ CURVE (RIGHTING ARM) ANALYSIS
 # ==============================================================================
 
-GZ_DIR := $(SRC_DIR)/gz
-GZ_SOURCE := $(wildcard $(GZ_DIR)/*.py) $(wildcard $(SRC_DIR)/physics/*.py)
 GZ_ARTIFACT := $(ARTIFACT_DIR)/$(BOAT).$(CONFIGURATION).gz.json
 GZ_PNG := $(ARTIFACT_DIR)/$(BOAT).$(CONFIGURATION).gz.png
 
-$(GZ_ARTIFACT): $(BUOYANCY_ARTIFACT) $(DESIGN_ARTIFACT) $(PARAMETER_ARTIFACT) $(GZ_SOURCE) | $(ARTIFACT_DIR)
+$(GZ_ARTIFACT): $(BUOYANCY_ARTIFACT) $(DESIGN_ARTIFACT) $(PARAMETER_ARTIFACT) | $(ARTIFACT_DIR)
 	@echo "Computing GZ curve: $(BOAT).$(CONFIGURATION)"
-	@if [ "$(UNAME)" = "Darwin" ]; then \
-		PYTHONPATH=$(FREECAD_BUNDLE)/Contents/Resources/lib:$(FREECAD_BUNDLE)/Contents/Resources/Mod:$(PWD) \
-		DYLD_LIBRARY_PATH=$(FREECAD_BUNDLE)/Contents/Frameworks:$(FREECAD_BUNDLE)/Contents/Resources/lib \
-		$(FREECAD_PYTHON) -m src.gz \
-			--design $(DESIGN_ARTIFACT) \
-			--buoyancy $(BUOYANCY_ARTIFACT) \
-			--parameters $(PARAMETER_ARTIFACT) \
-			--output $@ \
-			--output-png $(GZ_PNG); \
-	else \
-		PYTHONPATH=$(PWD) $(FREECAD_PYTHON) -m src.gz \
-			--design $(DESIGN_ARTIFACT) \
-			--buoyancy $(BUOYANCY_ARTIFACT) \
-			--parameters $(PARAMETER_ARTIFACT) \
-			--output $@ \
-			--output-png $(GZ_PNG); \
-	fi
+	@PYTHONPATH=$(FREECAD_LIB):$(PWD) $(CONDA_PYTHON) -m shipshape.gz \
+		--design $(DESIGN_ARTIFACT) \
+		--buoyancy $(BUOYANCY_ARTIFACT) \
+		--parameters $(PARAMETER_ARTIFACT) \
+		--output $@ \
+		--output-png $(GZ_PNG)
 
 .PHONY: gz
 gz: $(GZ_ARTIFACT)
