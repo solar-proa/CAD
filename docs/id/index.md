@@ -158,7 +158,14 @@ National University of Singapore).
 
 - Ong Miao Ying, Clara, Robotics & Machine Intelligence, Second Major in Innovation & Design, BEng 2029
 
+- Rahul Pradhan, Electrical Engineering, BEng 2029
+
 - Tan Jia Jun, Mechanical Engineering, BEng 2027
+
+<div style="margin-bottom: 3em;">
+  <img src="{{ '/images/team.jpg' | relative_url }}" alt="Roti Proa II - Kapal Wisata Harian Bertenaga Surya-Listrik" style="width: 100%; max-width: 800px; height: auto; border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.15); display: block; margin: 0 auto;">
+  <p style="text-align: center; color: #666; font-size: 0.9em; margin-top: 0.5em;">Tim Solar Proa di pesta pizza Imlek 2026; dari kiri ke kanan: Jia Jun, Rahul, (Kelly,) Luke, Vikram, Qian Fu, Julia, dan Clara; latar belakang: lokasi konstruksi Solar Proa II di NUS dengan kondisi ama per 13/2/2026</p>
+</div>
 
 **Penasihat Teknis:**
 
