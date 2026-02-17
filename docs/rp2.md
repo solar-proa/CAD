@@ -91,6 +91,9 @@ The vessel's structural integrity has been validated under multiple load scenari
 
 
 
+**[View Full Electrical Setup & Simulation Result →]({{ '/electrical_rp2.html' | relative_url }})**
+
+
 ## Project Status
 
 **Current Phase:** Under Construction
