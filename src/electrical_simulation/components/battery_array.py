@@ -1,7 +1,6 @@
-from ..constants import GROUNDING_RESISTANCE, WIRE_RESISTANCE, BARF, BARE
 
 class Battery_Array:
-    def __init__(self, circuit, components, **kwargs):
+    def __init__(self, circuit, components, constants=None, **kwargs):
         self.circuit = circuit
         self.BATTERY_IN_PARALLEL = kwargs.get("battery_in_parallel")
         self.BATTERY_IN_SERIES = kwargs.get("battery_in_series")
@@ -18,6 +17,7 @@ class Battery_Array:
         self.terminal = None
         self.terminal_id = None
         self.components = components
+        self.constants = constants
     
     # Battery types should not be mixed, hence no array_number parameter
     def create_battery_array(self, log=False):
@@ -32,10 +32,10 @@ class Battery_Array:
                 
                 self.circuit.V(battery_name, battery_pos, battery_neg, self.BATTERY_VOLTAGE)
                 if s == 0:
-                    self.circuit.R(f"{battery_name}_grounding", battery_neg, self.circuit.gnd, GROUNDING_RESISTANCE)
+                    self.circuit.R(f"{battery_name}_grounding", battery_neg, self.circuit.gnd, self.constants["GROUNDING_RESISTANCE"])
                 else:
                     prev_battery_name = f"p{p}_s{s-1}_battery"
-                    self.circuit.R(f"{battery_name}_internal", battery_neg, f"{prev_battery_name}_positive", WIRE_RESISTANCE)
+                    self.circuit.R(f"{battery_name}_internal", battery_neg, f"{prev_battery_name}_positive", self.constants["WIRE_RESISTANCE"])
                 
             self.components["battery"].append(battery_row)
                         
@@ -43,7 +43,7 @@ class Battery_Array:
             battery_row_end = row[-1]
             positive_node = f"{battery_row_end}_positive"
             battery_wire = f"battery_wire_{index}"
-            self.circuit.R(battery_wire, positive_node, "battery_input_measured", WIRE_RESISTANCE)  
+            self.circuit.R(battery_wire, positive_node, "battery_input_measured", self.constants["WIRE_RESISTANCE"])  
             self.components["wire"].append(battery_wire)
             
         self.terminal_id = "total_battery_input_current"
@@ -51,7 +51,7 @@ class Battery_Array:
         
         self.circuit.V(self.terminal_id,
                        self.terminal, "battery_input_measured",
-                       GROUNDING_RESISTANCE)
+                       self.constants["GROUNDING_RESISTANCE"])
         
         if log:
             print(self)        
@@ -83,7 +83,7 @@ class Battery_Array:
 
     def __str__(self):
         return f"""
-{BARF}Battery Setup{BARE}
+{self.constants['BARF']}Battery Setup{self.constants['BARE']}
 Configuration: {self.BATTERY_IN_SERIES} in series, {self.BATTERY_IN_PARALLEL} in parallel
 Total Voltage: {self.get_total_voltage()} V
 Max Charge Current: {self.get_charge_limit()} A

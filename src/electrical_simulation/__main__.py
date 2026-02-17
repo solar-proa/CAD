@@ -11,16 +11,14 @@ Supports multiple simulation types:
 
 import argparse
 import json
-import os
-import sys
 
-from .constants import load_constants, BARF, BARE
 from .circuit_constructor import build_circuit_from_json
 from .pyspice_simulator import begin_simulation
 from .result_saver import save_to_file
 from .simulation_over_time import start_voyage
 from .simulation_sweeper import sweep_panel_power, sweep_throttle
 
+constants = None
 
 def check_ngspice():
     try:
@@ -59,65 +57,68 @@ def main():
     args = parser.parse_args()
 
     # Load constants from JSON
-    load_constants(args.constants)
-
+    constants = json.load(open(args.constants))
     ngspice_available = check_ngspice()
 
     output_dir = args.output
 
     if args.simulation_type == 'all':
-        run_operating_point_simulation(args, ngspice_available, output_dir)
-        run_sweep_throttle(args, ngspice_available, output_dir)
-        run_sweep_panel_power(args, ngspice_available, output_dir)
-        run_voyage_simulation(args, ngspice_available, output_dir)
+        run_operating_point_simulation(args, ngspice_available, output_dir, constants)
+        run_sweep_throttle(args, ngspice_available, output_dir, constants)
+        run_sweep_panel_power(args, ngspice_available, output_dir, constants)
+        run_voyage_simulation(args, ngspice_available, output_dir, constants)
 
     elif args.simulation_type == 'operating_point':
-        run_operating_point_simulation(args, ngspice_available, output_dir)
+        run_operating_point_simulation(args, ngspice_available, output_dir, constants)
 
     elif args.simulation_type == 'sweep_throttle':
-        run_sweep_throttle(args, ngspice_available, output_dir)
+        run_sweep_throttle(args, ngspice_available, output_dir, constants)
 
     elif args.simulation_type == 'sweep_panel_power':
-        run_sweep_panel_power(args, ngspice_available, output_dir)
+        run_sweep_panel_power(args, ngspice_available, output_dir, constants)
 
     elif args.simulation_type == 'voyage':
-        run_voyage_simulation(args, ngspice_available, output_dir)
+        run_voyage_simulation(args, ngspice_available, output_dir, constants)
 
-def run_operating_point_simulation(args, ngspice_available, output_dir):
-    circuit, component_object, errors = build_circuit_from_json(args.circuit)
+def run_operating_point_simulation(args, ngspice_available, output_dir, constants):
+    circuit, component_object, errors = build_circuit_from_json(args.circuit, constants=constants)
     analysis, result = begin_simulation(
         circuit, component_object, errors, ngspice_available,
         simulation_logging=args.verbose, show_errors=args.verbose,
-        show_warnings=args.verbose)
+        show_warnings=args.verbose,
+        constants=constants)
 
-    save_to_file(result, save_path=output_dir + ".operating_point.json")
+    save_to_file(result, save_path=output_dir + ".operating_point.json", constants=constants)
     print(f"✓ Operating point simulation complete: {output_dir}.operating_point.json")
 
 
-def run_sweep_throttle(args, ngspice_available, output_dir):
+def run_sweep_throttle(args, ngspice_available, output_dir, constants):
     sweep_throttle(
         circuit_config_loc=args.circuit,
         save_path=output_dir + ".sweep_throttle",
         ngspice_available=ngspice_available,
         simulation_logging=args.verbose,
-        save_output=True) 
+        save_output=True,
+        constants=constants) 
     print(f"✓ Sweep throttle simulation complete: {output_dir}.sweep_throttle")
     
-def run_sweep_panel_power(args, ngspice_available, output_dir):
+def run_sweep_panel_power(args, ngspice_available, output_dir, constants):
     sweep_panel_power(
         circuit_config_loc=args.circuit,
         save_path=output_dir + ".sweep_panel_power",
         ngspice_available=ngspice_available,
         simulation_logging=args.verbose,
-        save_output=True)   
+        save_output=True,
+        constants=constants)   
     print(f"✓ Sweep panel power simulation complete: {output_dir}.sweep_panel_power")
 
-def run_voyage_simulation(args, ngspice_available, output_dir):
+def run_voyage_simulation(args, ngspice_available, output_dir, constants):
     start_voyage(
         circuit_config_loc=args.circuit,
         voyage_config_loc=args.voyage,
         save_path=output_dir + ".voyage",
-        ngspice_available=ngspice_available) 
+        ngspice_available=ngspice_available,
+        constants=constants) 
     print(f"✓ Voyage simulation complete: {output_dir}.voyage")
  
 if __name__ == "__main__":

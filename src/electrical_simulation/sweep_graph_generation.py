@@ -4,8 +4,6 @@ import numpy as np
 import os
 from typing import List, Dict
 
-from .constants import EPSILON
-
 
 MARKER_SIZE = 0
 MARKER_STYLE = 'o'  #'o', 's', '^', 'D', '*', 'P', 'X', etc.
@@ -21,7 +19,8 @@ def generate_graph(results: list, x_axis: list, x_label: str = "",
                    power_display_choice: list = [],
                    battery_capacity: list = [],
                    save_path: str = None,
-                   show_plot: bool = False):
+                   show_plot: bool = False,
+                   constants=None):
     display_graph = show_plot
     
     num_plots = sum([len(voltage_display_choice) > 0, 
@@ -52,7 +51,7 @@ def generate_graph(results: list, x_axis: list, x_label: str = "",
             })
         for array in result['summary']['data']:
             current = array['current']['total_battery_input_current']
-            if current < 1:
+            if current < constants["EPSILON"]:
                 equilibrium_points.append(x_axis[i])
     
     # Color cycles for different traces
@@ -174,6 +173,8 @@ def generate_graph(results: list, x_axis: list, x_label: str = "",
         ax_single.set_xlabel(ax.get_xlabel())
         ax_single.set_ylabel(ax.get_ylabel())
 
+        ax_single.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+        ax_single.grid(True, alpha=0.3)
         save_file = save_path + "." + f"{ax.get_title()}.png"
         fig_single.savefig(save_file, bbox_inches="tight")
         plt.close(fig_single)

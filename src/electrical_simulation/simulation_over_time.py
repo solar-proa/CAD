@@ -3,9 +3,8 @@ import json
 from .sweep_graph_generation import generate_graph
 from .pyspice_simulator import begin_simulation
 from .circuit_constructor import build_circuit_from_json
-from .constants import *
 
-def start_voyage(circuit_config_loc: str, voyage_config_loc: str, save_path: str, ngspice_available: bool):
+def start_voyage(circuit_config_loc: str, voyage_config_loc: str, save_path: str, ngspice_available: bool, constants=None):
     with open(voyage_config_loc, 'r') as f:
         data = json.load(f)
 
@@ -42,14 +41,14 @@ def start_voyage(circuit_config_loc: str, voyage_config_loc: str, save_path: str
         modifications['current_soc'] = current_soc
         
         # Run with original circuit first
-        circuit, component_object, errors = build_circuit_from_json(circuit_config_loc=circuit_config_loc, modifications=modifications)
-        analysis, result = begin_simulation(circuit, component_object, errors, ngspice_available)
+        circuit, component_object, errors = build_circuit_from_json(circuit_config_loc=circuit_config_loc, modifications=modifications, constants=constants)
+        analysis, result = begin_simulation(circuit, component_object, errors, ngspice_available, constants=constants)
 
         if results == []:
             results.append(result)
 
         if analysis is None:
-            print(f"{BARF}Simulation Aborted{BARE}")
+            print(f"{constants['BARF']}Simulation Aborted{constants['BARE']}")
             break
         
         # +ve -> Battery charging, -ve -> discharging
@@ -65,7 +64,7 @@ def start_voyage(circuit_config_loc: str, voyage_config_loc: str, save_path: str
             time_to_full = (battery_capacity_Amin - current_capacity_Amin) / battery_charge_current_A
             #print("Time to full battery (minutes):", time_to_full)
             
-            if time_to_full > EPSILON:
+            if time_to_full > constants["EPSILON"]:
                 # Run 2 simulations: to full, then rest of time with 0 charge current
                 results.append(result)
                 time_range_min.append(time_range_min[-1] + time_to_full)
@@ -77,8 +76,8 @@ def start_voyage(circuit_config_loc: str, voyage_config_loc: str, save_path: str
             
             # Re-run with 0 charge current for rest of time
             modifications['max_charge_current'] = 0
-            circuit, component_object, errors = build_circuit_from_json(circuit_config_loc=circuit_config_loc, modifications=modifications)
-            analysis, result = begin_simulation(circuit, component_object, errors, ngspice_available)
+            circuit, component_object, errors = build_circuit_from_json(circuit_config_loc=circuit_config_loc, modifications=modifications, constants=constants)
+            analysis, result = begin_simulation(circuit, component_object, errors, ngspice_available, constants=constants)
             
             results.append(result)
             time_range_min.append(time_range_min[-1] + (duration_minutes - time_to_full))
@@ -89,7 +88,7 @@ def start_voyage(circuit_config_loc: str, voyage_config_loc: str, save_path: str
             time_to_empty = abs(current_capacity_Amin / battery_charge_current_A)
             #print("Time to empty battery (minutes):", time_to_empty)
             
-            if time_to_empty > EPSILON:
+            if time_to_empty > constants["EPSILON"]:
                 # Run 2 simulations: to empty, then rest of time with 0 discharge current
                 results.append(result)
                 time_range_min.append(time_range_min[-1] + time_to_empty)
@@ -99,8 +98,8 @@ def start_voyage(circuit_config_loc: str, voyage_config_loc: str, save_path: str
             
             # Re-run with 0 discharge current for rest of time
             modifications['max_discharge_current'] = 0
-            circuit, component_object, errors = build_circuit_from_json(circuit_config_loc=circuit_config_loc, modifications=modifications)
-            analysis, result = begin_simulation(circuit, component_object, errors, ngspice_available)
+            circuit, component_object, errors = build_circuit_from_json(circuit_config_loc=circuit_config_loc, modifications=modifications, constants=constants)
+            analysis, result = begin_simulation(circuit, component_object, errors, ngspice_available, constants=constants)
             
             results.append(result)
             time_range_min.append(time_range_min[-1] + (duration_minutes - time_to_empty))
@@ -122,7 +121,7 @@ def start_voyage(circuit_config_loc: str, voyage_config_loc: str, save_path: str
                    current_display_choice=['summary', 'load_result'],
                    power_display_choice=['panel_result', 'load_result'],
                    battery_capacity=battery_capacity_list,
-                   save_path=save_path)    
+                   save_path=save_path, constants=constants)   
     
 def real_time_digital_simulation(circuit_config_loc: str, ngspice_available: bool):
     None

@@ -1,8 +1,6 @@
 import json
 
-from .constants import *
 from PySpice.Spice.Netlist import Circuit
-from .constants import GROUNDING_RESISTANCE
 from .components.load_balancer import Load_Balancer
 from .components.load import Load
 from .components.battery_array import Battery_Array
@@ -11,7 +9,7 @@ from .components.solar_panel_array import Solar_Array
 
 
 def build_circuit_from_json(circuit_config_loc: str, modifications: dict = {},
-                            component_logging=False, show_components=False, show_netlist=False):
+                            component_logging=False, show_components=False, show_netlist=False, constants=None):
     circuit = Circuit("Solar_Panel-Mppt-Battery-Motor Circuit Thingy")
     components = {
         "panel": [],
@@ -40,8 +38,8 @@ def build_circuit_from_json(circuit_config_loc: str, modifications: dict = {},
     
     if modifications.get('current_soc') is not None:
         battery_config['current_soc'] = modifications['current_soc']
-        
-    battery_array = Battery_Array(circuit, components, **battery_config)
+
+    battery_array = Battery_Array(circuit, components, constants=constants, **battery_config)
     err = battery_array.create_battery_array(log=component_logging)
     
     component_object["battery_array"] = battery_array
@@ -58,8 +56,8 @@ def build_circuit_from_json(circuit_config_loc: str, modifications: dict = {},
             if modifications.get('panel_power_setting') is not None:
                 config['panel_info']['power'] *= modifications['panel_power_setting']
             solar_array = Solar_Array(
-                circuit, components, **config['panel_info'])
-            mppt = MPPT(circuit, components, **config['mppt_info'])
+                circuit, components, constants=constants, **config['panel_info'])
+            mppt = MPPT(circuit, components, constants=constants, **config['mppt_info'])
 
             solar_array.create_panels(mppt_index, log=component_logging)
             err = mppt.setup_mppt(mppt_index, solar_array,
@@ -73,7 +71,7 @@ def build_circuit_from_json(circuit_config_loc: str, modifications: dict = {},
     POWER_FROM = mppt.get_terminal() if mppt_index > 0 else None
     POWER_TO = battery_array.get_terminal()
     
-    circuit.V("total_mppt_output_current", POWER_FROM, POWER_TO, GROUNDING_RESISTANCE)
+    circuit.V("total_mppt_output_current", POWER_FROM, POWER_TO, constants["GROUNDING_RESISTANCE"])
 
     # Load/Motor
     index = 0
@@ -87,8 +85,8 @@ def build_circuit_from_json(circuit_config_loc: str, modifications: dict = {},
                 input_data['load_setup'][key]['throttle'] = modifications['throttle_setting'][index]
             else:
                 input_data['load_setup'][key]['throttle'] = modifications['throttle_setting']
-                
-        load = Load(circuit, components, load_name=load_name, **input_data['load_setup'][key])
+        
+        load = Load(circuit, components, load_name=load_name, constants=constants, **input_data['load_setup'][key])
         err = load.setup_load(battery_array, log=component_logging)
         
         component_object["load"] = component_object.get("load", []) + [load]
@@ -96,7 +94,7 @@ def build_circuit_from_json(circuit_config_loc: str, modifications: dict = {},
         index += 1  
         
     # Load Balancer (One is enough to restrict battery output)
-    load_balancer = Load_Balancer(circuit, components)
+    load_balancer = Load_Balancer(circuit, components, constants=constants)
     err = load_balancer.balance_loads(battery_array)
     
     component_object["load_balancer"] = load_balancer

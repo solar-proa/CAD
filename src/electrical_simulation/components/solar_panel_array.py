@@ -1,11 +1,11 @@
-from ..constants import BARF, BARE, GROUNDING_RESISTANCE, WIRE_RESISTANCE, EPSILON
 
 class Solar_Array:
-    def __init__(self, circuit, components, **kwargs):
+    def __init__(self, circuit, components, constants=None, **kwargs):
         self.circuit = circuit
+        self.constants = constants
         self.PANEL_IN_PARALLEL = kwargs.get("in_parallel")
         self.PANEL_IN_SERIES = kwargs.get("in_series")
-        self.PANEL_CURRENT = max(EPSILON, kwargs.get("power") / kwargs.get("voltage"))
+        self.PANEL_CURRENT = max(self.constants["EPSILON"], kwargs.get("power") / kwargs.get("voltage"))
         self.PANEL_INTERNAL_R = kwargs.get("voltage") / self.PANEL_CURRENT
         self.PANEL_ARRAY_TOTAL_VOLTAGE = self.PANEL_IN_SERIES * kwargs.get("voltage")
         self.PANEL_ARRAY_TOTAL_CURRENT = self.PANEL_IN_PARALLEL * self.PANEL_CURRENT
@@ -28,7 +28,7 @@ class Solar_Array:
                 self.circuit.I(panel_name, panel_neg, panel_pos, self.PANEL_CURRENT)
                 
                 # Ground all panel, else panel can only deliver voltage by a factor of 40 for some reason
-                self.circuit.R(f"{panel_name}_leak_to_gnd", panel_neg, self.circuit.gnd, GROUNDING_RESISTANCE)
+                self.circuit.R(f"{panel_name}_leak_to_gnd", panel_neg, self.circuit.gnd, self.constants["GROUNDING_RESISTANCE"])
 
                 if s != 0:
                     prev_panel_name = f"arr{array_number}_p{p}_s{s-1}_panel"
@@ -41,7 +41,7 @@ class Solar_Array:
             solar_row_end = row[-1]
             positive_node = f"{solar_row_end}_positive"
             panel_wire = f"arr{array_number}_panel_wire_{index}"
-            self.circuit.R(panel_wire, positive_node, f"arr{array_number}_solar_array_output", WIRE_RESISTANCE)
+            self.circuit.R(panel_wire, positive_node, f"arr{array_number}_solar_array_output", self.constants["WIRE_RESISTANCE"])
             self.components["wire"].append(panel_wire)
             # Small resistance to model wiring losses
         
@@ -50,7 +50,7 @@ class Solar_Array:
         self.circuit.V(f"arr{array_number}_solar_array_output", 
                        f"arr{array_number}_solar_array_output",
                        f"{self.terminal}", 
-                       GROUNDING_RESISTANCE)
+                       self.constants["GROUNDING_RESISTANCE"])
         
        
         if log:
@@ -71,7 +71,7 @@ class Solar_Array:
     
     def __str__(self, array_number=None):
         return f"""\
-{BARF}Solar Array Setup {(array_number + 1) if array_number else 1}{BARE}
+{self.constants['BARF']}Solar Array Setup {(array_number + 1) if array_number else 1}{self.constants['BARE']}
 Configuration: {self.PANEL_IN_SERIES} in series, {self.PANEL_IN_PARALLEL} in parallel
 Total Voltage: {self.PANEL_ARRAY_TOTAL_VOLTAGE} V
 Total Current: {self.PANEL_ARRAY_TOTAL_CURRENT} A

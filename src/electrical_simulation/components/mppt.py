@@ -1,14 +1,14 @@
 from ..components.battery_array import Battery_Array
 from ..components.solar_panel_array import Solar_Array
-from ..constants import GROUNDING_RESISTANCE, MPPT_BATTERY_VOLTAGE_BUFFER, VOLTAGE_MISMATCH_TOLERANCE, WIRE_RESISTANCE, BARF, BARE
 
 class MPPT:
-    def __init__(self, circuit, components, **kwargs):
+    def __init__(self, circuit, components, constants=None, **kwargs):
+        self.constants = constants
         self.MPPT_MAX_INPUT_VOLTAGE = kwargs.get("max_input_voltage")
         self.MPPT_MAX_INPUT_CURRENT = kwargs.get("max_input_current")
         self.MPPT_MAX_OUTPUT_VOLTAGE = kwargs.get("max_output_voltage")
         self.MPPT_MAX_OUTPUT_CURRENT = kwargs.get("max_output_current")
-        self.MPPT_OUTPUT_BUFFER_VOLTAGE = MPPT_BATTERY_VOLTAGE_BUFFER
+        self.MPPT_OUTPUT_BUFFER_VOLTAGE = self.constants["MPPT_BATTERY_VOLTAGE_BUFFER"]
         self.MPPT_EFFICIENCY = kwargs.get("efficiency")
         self.circuit = circuit
         self.components = components
@@ -33,11 +33,11 @@ class MPPT:
         # Regulate output current to calculated amount
         self.circuit.raw_spice += f"""Barr{array_number}_mppt_current_reg 0 arr{array_number}_mppt_output I = min({self.MPPT_MAX_OUTPUT_CURRENT}, {MPPT_OUTPUT_CURRENT})\n"""
         
-        self.circuit.V(f"arr{array_number}_mppt_output", f"arr{array_number}_mppt_output", f"arr{array_number}_mppt_output_measured", GROUNDING_RESISTANCE)
+        self.circuit.V(f"arr{array_number}_mppt_output", f"arr{array_number}_mppt_output", f"arr{array_number}_mppt_output_measured", self.constants["GROUNDING_RESISTANCE"])
         
         self.terminal = "total_mppt_output"
         # Connect MPPT output to DC bus
-        self.circuit.R(f"arr{array_number}_mppt_out_wire", f"arr{array_number}_mppt_output_measured", self.terminal, WIRE_RESISTANCE)
+        self.circuit.R(f"arr{array_number}_mppt_out_wire", f"arr{array_number}_mppt_output_measured", self.terminal, self.constants["WIRE_RESISTANCE"])
         #dc_bus is shared positive node for battery and load
 
         self.components["mppt"].append(f"arr{array_number}_mppt_current_reg")
@@ -45,8 +45,8 @@ class MPPT:
         if log:
             print(self.__str__(array_number, MPPT_INPUT_VOLTAGE, MPPT_MAX_INPUT_POWER, MPPT_OUTPUT_POWER, MPPT_OUTPUT_CURRENT))
             
-        if abs(battery_array.get_total_voltage() - self.MPPT_MAX_OUTPUT_VOLTAGE) > VOLTAGE_MISMATCH_TOLERANCE:
-            return f"Mismatch between battery voltage ({battery_array.get_total_voltage()} V) and MPPT max output voltage ({self.MPPT_MAX_OUTPUT_VOLTAGE} V) exceeds tolerance of {VOLTAGE_MISMATCH_TOLERANCE} V"
+        if abs(battery_array.get_total_voltage() - self.MPPT_MAX_OUTPUT_VOLTAGE) > self.MPPT_OUTPUT_BUFFER_VOLTAGE:
+            return f"Mismatch between battery voltage ({battery_array.get_total_voltage()} V) and MPPT max output voltage ({self.MPPT_MAX_OUTPUT_VOLTAGE} V) exceeds tolerance of {self.MPPT_OUTPUT_BUFFER_VOLTAGE} V"
         if MPPT_INPUT_VOLTAGE > self.MPPT_MAX_INPUT_VOLTAGE:
             return f"(Array {array_number}) Panel input voltage ({MPPT_INPUT_VOLTAGE} V) exceeds max MPPT input voltage ({self.MPPT_MAX_INPUT_VOLTAGE} V)"
         if MPPT_INPUT_CURRENT > self.MPPT_MAX_INPUT_CURRENT:
@@ -72,7 +72,7 @@ class MPPT:
     
     def __str__(self, array_number, MPPT_INPUT_VOLTAGE, MPPT_MAX_INPUT_POWER, MPPT_OUTPUT_POWER, MPPT_OUTPUT_CURRENT):
         return f"""
-{BARF}MPPT Setup {array_number + 1}{BARE}
+{self.constants['BARF']}MPPT Setup {array_number + 1}{self.constants['BARE']}
 Input Voltage: {MPPT_INPUT_VOLTAGE} V
 Output Voltage: {self.MPPT_OUTPUT_VOLTAGE} V
 Max Power: {MPPT_MAX_INPUT_POWER} W

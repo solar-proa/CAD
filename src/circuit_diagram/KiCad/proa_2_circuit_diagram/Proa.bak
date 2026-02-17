@@ -223,7 +223,7 @@
 			)
 		)
 		(symbol "BUCK_48V_24V_?A_1_1"
-			(text "48V→24V"
+			(text "24V→5V\n"
 				(at -0.762 0 0)
 				(effects
 					(font
@@ -231,7 +231,7 @@
 					)
 				)
 			)
-			(text "10A"
+			(text "5A"
 				(at -0.508 -1.778 0)
 				(effects
 					(font

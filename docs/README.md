@@ -3,6 +3,7 @@ cd docs
 
 # Install all 3 options
 ridk install
+# If does not work, download MSYS2 from https://www.msys2.org/ then retry
 
 # Install dependencies
 bundle install

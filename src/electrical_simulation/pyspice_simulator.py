@@ -1,12 +1,11 @@
 import datetime
 from .parse_result import parse_simulation_result
 from .result_checker import cross_check_result
-from .constants import *
 from PySpice.Spice.Netlist import Circuit
 
 def begin_simulation(circuit, component_object, errors, pyspice_availablility=False,
                      start_simulation=True, ignore_error=True, simulation_logging=False,
-                     show_panels=False, show_errors=False, show_warnings=False):
+                     show_panels=False, show_errors=False, show_warnings=False, constants=None):
     simulation_started = False
     
     # Errors cannot be ignored for actual run
@@ -19,29 +18,29 @@ def begin_simulation(circuit, component_object, errors, pyspice_availablility=Fa
             simulation_started = True
             meta_data = {"name": circuit.title, "date": datetime.datetime.now().isoformat()}
             
-            analysis, result, struc = __simulate__(circuit, meta_data, errors, pyspice_availablility, simulation_logging)
-            parse_simulation_result(analysis, result, struc, simulation_logging, show_panels)
-            cross_check_result(analysis, component_object, result)
+            analysis, result, struc = __simulate__(circuit, meta_data, errors, pyspice_availablility, simulation_logging, constants)
+            parse_simulation_result(analysis, result, struc, simulation_logging, show_panels, constants=constants)
+            cross_check_result(analysis, component_object, result, constants=constants)
     else:
         if show_errors and start_simulation:
-            print(f"{BARF}Simulation Aborted Due to Errors in Circuit Setup.{BARE}")
+            print(f"{constants['BARF']}Simulation Aborted Due to Errors in Circuit Setup.{constants['BARE']}")
     
     if has_error and show_errors:
-        print(f"\n{BARF}Errors Detected During Circuit Setup:{BARE}")
+        print(f"\n{constants['BARF']}Errors Detected During Circuit Setup:{constants['BARE']}")
         for error in errors:
             print(f"\t{error}")
         print()
 
     # Warning are components with limited output but might still work
     if simulation_started and result["warning"]["array_count"] > 0 and show_warnings:
-        print(f"\n{BARF}Warnings Detected During Simulation:{BARE}")
+        print(f"\n{constants['BARF']}Warnings Detected During Simulation:{constants['BARE']}")
         for warning in result["warning"]["data"]:
             print(f"\t{warning}")
         print()
 
     return analysis, result
 
-def __simulate__(circuit: Circuit, meta_data, errors, NGSPICE_AVAILABLE, simulation_logging=False):
+def __simulate__(circuit: Circuit, meta_data, errors, NGSPICE_AVAILABLE, simulation_logging=False, constants=None):
     struc = '{"array_index": 0, "voltage": {}, "current": {}}'
     mppt_result = {
         "keyword": "mppt",
@@ -121,5 +120,5 @@ def __simulate__(circuit: Circuit, meta_data, errors, NGSPICE_AVAILABLE, simulat
         return None, result, struc
     
     if simulation_logging:
-        print(f"\n{BARF}Simulation Completed Successfully.{BARE}")
+        print(f"\n{constants['BARF']}Simulation Completed Successfully.{constants['BARE']}")
     return analysis, result, struc
