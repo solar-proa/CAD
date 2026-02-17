@@ -37,19 +37,19 @@ Kesetimbangan daya apung dihitung menggunakan metode Newton, secara iteratif men
 
 | Parameter | Nilai |
 |-----------|-------|
-| Volume terendam | {{ site.data.rp2_beaching_buoyancy.vaka.submerged_volume_liters }} liter |
-| Volume total | {{ site.data.rp2_beaching_buoyancy.vaka.total_volume_liters }} liter |
-| Persentase terendam | {{ site.data.rp2_beaching_buoyancy.vaka.submerged_percent }}% |
-| Posisi Z (dunia) | {{ site.data.rp2_beaching_buoyancy.vaka.z_world_mm }} mm |
+| Volume terendam | {{ site.data.rp2_beaching_buoyancy.hull_groups.vaka.submerged_volume_liters }} liter |
+| Volume total | {{ site.data.rp2_beaching_buoyancy.hull_groups.vaka.total_volume_liters }} liter |
+| Persentase terendam | {{ site.data.rp2_beaching_buoyancy.hull_groups.vaka.submerged_percent }}% |
+| Posisi Z (dunia) | {{ site.data.rp2_beaching_buoyancy.hull_groups.vaka.z_world_mm }} mm |
 
 ### Ama (Pelampung Cadik)
 
 | Parameter | Nilai |
 |-----------|-------|
-| Volume terendam | {{ site.data.rp2_beaching_buoyancy.ama.submerged_volume_liters }} liter |
-| Volume total | {{ site.data.rp2_beaching_buoyancy.ama.total_volume_liters }} liter |
-| Persentase terendam | {{ site.data.rp2_beaching_buoyancy.ama.submerged_percent }}% |
-| Posisi Z (dunia) | {{ site.data.rp2_beaching_buoyancy.ama.z_world_mm }} mm |
+| Volume terendam | {{ site.data.rp2_beaching_buoyancy.hull_groups.ama.submerged_volume_liters }} liter |
+| Volume total | {{ site.data.rp2_beaching_buoyancy.hull_groups.ama.total_volume_liters }} liter |
+| Persentase terendam | {{ site.data.rp2_beaching_buoyancy.hull_groups.ama.submerged_percent }}% |
+| Posisi Z (dunia) | {{ site.data.rp2_beaching_buoyancy.hull_groups.ama.z_world_mm }} mm |
 
 ### Pusat Massa dan Daya Apung
 

@@ -35,19 +35,19 @@ The buoyancy equilibrium is computed using Newton's method, iteratively adjustin
 
 | Parameter | Value |
 |-----------|-------|
-| Submerged volume | {{ site.data.rp2_beaching_buoyancy.vaka.submerged_volume_liters }} liters |
-| Total volume | {{ site.data.rp2_beaching_buoyancy.vaka.total_volume_liters }} liters |
-| Submerged percentage | {{ site.data.rp2_beaching_buoyancy.vaka.submerged_percent }}% |
-| Z position (world) | {{ site.data.rp2_beaching_buoyancy.vaka.z_world_mm }} mm |
+| Submerged volume | {{ site.data.rp2_beaching_buoyancy.hull_groups.vaka.submerged_volume_liters }} liters |
+| Total volume | {{ site.data.rp2_beaching_buoyancy.hull_groups.vaka.total_volume_liters }} liters |
+| Submerged percentage | {{ site.data.rp2_beaching_buoyancy.hull_groups.vaka.submerged_percent }}% |
+| Z position (world) | {{ site.data.rp2_beaching_buoyancy.hull_groups.vaka.z_world_mm }} mm |
 
 ### Ama (Outrigger Float)
 
 | Parameter | Value |
 |-----------|-------|
-| Submerged volume | {{ site.data.rp2_beaching_buoyancy.ama.submerged_volume_liters }} liters |
-| Total volume | {{ site.data.rp2_beaching_buoyancy.ama.total_volume_liters }} liters |
-| Submerged percentage | {{ site.data.rp2_beaching_buoyancy.ama.submerged_percent }}% |
-| Z position (world) | {{ site.data.rp2_beaching_buoyancy.ama.z_world_mm }} mm |
+| Submerged volume | {{ site.data.rp2_beaching_buoyancy.hull_groups.ama.submerged_volume_liters }} liters |
+| Total volume | {{ site.data.rp2_beaching_buoyancy.hull_groups.ama.total_volume_liters }} liters |
+| Submerged percentage | {{ site.data.rp2_beaching_buoyancy.hull_groups.ama.submerged_percent }}% |
+| Z position (world) | {{ site.data.rp2_beaching_buoyancy.hull_groups.ama.z_world_mm }} mm |
 
 ### Centers of Mass and Buoyancy
 
