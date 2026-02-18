@@ -69,7 +69,7 @@ def build_circuit_from_json(circuit_setup: json, modifications: dict = {},
             component_object["solar_array"] = component_object.get("solar_array", []) + [solar_array]
             mppt_index += 1
 
-    POWER_FROM = mppt.get_terminal() if mppt_index > 0 else 0   # Goes to ground if no MPPT
+    POWER_FROM = mppt.get_terminal() if mppt_index > 0 else battery_array.get_terminal() + "_ignore"
     POWER_TO = battery_array.get_terminal()
     
     circuit.V("total_mppt_output_current", POWER_FROM, POWER_TO, constants["GROUNDING_RESISTANCE"])

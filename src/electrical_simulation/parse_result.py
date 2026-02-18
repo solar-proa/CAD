@@ -17,6 +17,10 @@ def parse_simulation_result(analysis, result, struc, SIMULATION_LOGGING=False, S
         for dic in result.values():
             if matched:
                 break
+            if 'ignore' in node_name:
+                matched = True
+                break
+            
             if dic.get("keyword", 'None') in node_name:
                 matched = True
                 matches = dict(re.findall(constants["ARRAY_DECODER_PATTERN"], node_name))

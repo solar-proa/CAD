@@ -143,6 +143,7 @@ help:
 	@echo "  make check                  - Check FreeCAD installation"
 	@echo "  make graph                  - Generate dependency graph (docs/dependency_graph.png)"
 	@echo "  make help                   - Show this help message"
+	@echo "  make sync-docs              - Copy artifacts to docs folders for local preview"
 	@echo ""
 	@echo "Examples:"
 	@echo "  make parameter BOAT=rp1"
