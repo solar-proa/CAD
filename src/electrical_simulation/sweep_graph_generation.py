@@ -44,6 +44,7 @@ def generate_graph(results: list, x_axis: list, x_label: str = "",
     warning_points = []
     equilibrium_points = []
     
+    # Pre-processing
     for i, result in enumerate(results):
         if 'warning' in result and result['warning']['array_count'] > 0:
             warning_points.append({
@@ -54,6 +55,22 @@ def generate_graph(results: list, x_axis: list, x_label: str = "",
             current = array['current']['total_battery_input_current']
             if current < constants["EPSILON"]:
                 equilibrium_points.append(x_axis[i])
+        
+        # Filter out negative terminal    
+        for battery in result.get('battery_result', {}).get('data', []):
+            to_remove = []
+            for key, value in battery['voltage'].items():
+                if '_negative' in key:
+                    to_remove.append(key)
+            for key in to_remove:
+                battery['voltage'].pop(key)
+            
+            to_remove = []
+            for key, value in battery['current'].items():
+                if '_negative' in key:
+                    to_remove.append(key)
+            for key in to_remove:
+                battery['current'].pop(key)
     
     # Color cycles for different traces
     colors = plt.cm.tab10(np.linspace(0, 1, 10))
