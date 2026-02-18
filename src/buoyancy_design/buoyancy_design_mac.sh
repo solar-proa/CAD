@@ -154,20 +154,43 @@ def compute_rotation_center(doc):
 
 
 def get_boat_bounds(doc):
-    """Get the bounding box of all objects in the document."""
-    xmin = ymin = zmin = float('inf')
-    xmax = ymax = zmax = float('-inf')
-
+    """Get the bounding box of hull objects for water surface sizing."""
+    obj_data = []
     for obj in doc.Objects:
         if not hasattr(obj, 'Shape') or obj.Shape.isNull():
             continue
         if not obj.TypeId.startswith('Part::'):
             continue
-
+        name = obj.Label or obj.Name
+        if '_indicator' in name or 'Water' in name:
+            continue
         bbox = obj.Shape.BoundBox
         if not bbox.isValid():
             continue
+        try:
+            vol = obj.Shape.Volume
+        except RuntimeError:
+            continue
+        if vol < 1e-6:
+            continue
+        obj_data.append((vol, bbox))
 
+    if not obj_data:
+        return {
+            'xmin': -5000, 'xmax': 5000,
+            'ymin': -5000, 'ymax': 5000,
+            'zmin': -1000, 'zmax': 1000
+        }
+
+    max_vol = max(v for v, _ in obj_data)
+    vol_threshold = max_vol * 0.01
+
+    xmin = ymin = zmin = float('inf')
+    xmax = ymax = zmax = float('-inf')
+
+    for vol, bbox in obj_data:
+        if vol < vol_threshold:
+            continue
         xmin = min(xmin, bbox.XMin)
         xmax = max(xmax, bbox.XMax)
         ymin = min(ymin, bbox.YMin)

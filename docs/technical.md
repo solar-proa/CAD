@@ -36,13 +36,15 @@ The build process transforms parameter files into website-ready outputs through 
 
 | Stage | Input | Output | Description |
 |-------|-------|--------|-------------|
-| **parameter** | Boat JSON + Configuration JSON | Merged parameters | Combines boat dimensions with sail configuration |
+| **parameter** | Boat JSON + Configuration JSON | Merged parameters | Combines boat dimensions with sail configuration (shipshape + project plugin) |
 | **design** | Parameters | FreeCAD model (.FCStd) | Builds the 3D geometry from parameters |
-| **mass** | Design (FreeCAD) | Mass properties JSON | Calculates volumes, masses, and buoyancy |
+| **mass** | Design (FreeCAD) | Mass properties JSON | Calculates volumes, masses, and buoyancy (shipshape) |
 | **color** | Design (FreeCAD) | Colored design | Applies materials and colors for rendering |
-| **buoyancy** | Design (FreeCAD), Mass properties | Buoyancy properties | Analyzes buoyancy using Newton's method |
+| **buoyancy** | Design (FreeCAD), Mass properties | Buoyancy properties | Finds equilibrium pose using Newton-Raphson iteration (shipshape) |
+| **gz** | Design (FreeCAD), Buoyancy | GZ curve JSON + PNG | Computes righting-arm curve over heel angles (shipshape) |
 | **render** | Colored design (FreeCAD) | PNG images | Generates isometric, top, front, right views |
 | **step** | FreeCAD model | STEP file | Exports universal CAD format |
+| **validate** | Parameters, Mass, GZ | Validation JSON | Structural validation: aka, mast, spine, capsize analysis |
 
 ---
 
@@ -92,22 +94,26 @@ This ensures the website always reflects the current state of the CAD models - r
 
 ## Repository Structure
 
+Design-specific code lives in this repo. Boat-independent analysis (parameter merging, mass, buoyancy, GZ curves) is provided by the [shipshape](https://github.com/shipshape-marine/shipshape) library. Structural validation lives in `src/structural/`.
+
 ```
-CAD/
+solar-proa/
 ├── constant/
-│   ├── boat/           # Boat parameter files (rp1.json, rp2.json, rp3.json)
-│   ├── configuration/  # Sailing configurations
-│   └── material/       # Material properties (density, color)
+│   ├── boat/              # Boat parameter files (rp1.json, rp2.json, rp3.json)
+│   ├── configuration/     # Sailing configurations
+│   └── material/          # Material properties (density, color)
 ├── src/
-│   ├── parameter/      # Parameter merging logic
-│   ├── design/         # FreeCAD model builders
-│   ├── mass/           # Mass calculation scripts
-│   ├── color/          # Material application
-│   ├── render/         # Render generation
-│   └── step/           # STEP export
-├── artifact/           # Generated outputs (models, renders, data)
-├── docs/               # Jekyll website source
-└── Makefile            # Build orchestration
+│   ├── parameter/         # SolarProa-specific derived parameter calculations
+│   ├── design/            # FreeCAD model builders (central, mirror, rotation)
+│   ├── color/             # Material and color application
+│   ├── render/            # Render generation
+│   ├── step/              # STEP export
+│   ├── lines/             # Lines plan generation
+│   ├── structural/        # Structural validation (aka, mast, spine, capsize)
+│   └── buoyancy_design/   # Equilibrium positioning in FreeCAD
+├── artifact/              # Generated outputs (models, renders, data)
+├── docs/                  # Jekyll website source
+└── Makefile               # Build orchestration
 ```
 
 ---
@@ -116,6 +122,7 @@ CAD/
 
 - **[FreeCAD 1.0](https://www.freecad.org/)** - Open-source parametric CAD
 - **Python 3** - Scripting and automation
+- **[shipshape](https://github.com/shipshape-marine/shipshape)** - Boat-independent naval engineering library (parameter, mass, buoyancy, GZ)
 - **GNU Make** - Build orchestration and dependency tracking
 - **Jekyll** - Static site generation
 - **GitHub Actions** - CI/CD pipeline
@@ -125,12 +132,9 @@ CAD/
 
 ## Open Source
 
-The entire project is open source under permissive licenses:
+The entire project is open source under the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0).
 
-- **CAD Models:** [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/)
-- **Code:** MIT License
-
-**GitHub Repository:** [github.com/solar-proa/CAD](https://github.com/solar-proa/CAD)
+**GitHub Repository:** [github.com/shipshape-marine/solar-proa](https://github.com/shipshape-marine/solar-proa)
 
 Contributions, feedback, and forks are welcome.
 

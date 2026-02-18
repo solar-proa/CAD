@@ -1,6 +1,7 @@
 ---
 layout: default
 title: Roti Proa II - Spesifikasi Desain dan Render
+description: Kapal Hibrida Bertenaga Angin-Surya untuk Daerah Tropis
 lang: id
 ---
 

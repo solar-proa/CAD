@@ -1,0 +1,4 @@
+{
+  "ama": ["ama_pipe", "ama_body_foam", "ama_cone_foam", "ama_cone"],
+  "vaka": ["foam_below_sole", "air_inside_vaka", "bottom", "sole", "hull"]
+}

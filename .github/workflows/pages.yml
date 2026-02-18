@@ -46,7 +46,7 @@ jobs:
           # Create wrapper for running FreeCAD in console mode (for builds)
           cat > freecadcmd << 'WRAPPER_EOF'
           #!/bin/bash
-          xvfb-run -a ./squashfs-root/usr/bin/freecad --console "$@"
+          xvfb-run -a -s "-screen 0 3840x2160x24" ./squashfs-root/usr/bin/freecad --console "$@"
           WRAPPER_EOF
           chmod +x freecadcmd
           
@@ -57,16 +57,19 @@ jobs:
           export LD_LIBRARY_PATH=./squashfs-root/usr/lib:$LD_LIBRARY_PATH
           export PYTHONPATH=./squashfs-root/usr/lib:./squashfs-root/usr/Mod:$PYTHONPATH
           mkdir -p $FREECAD_USER_HOME
-          xvfb-run -a ./squashfs-root/usr/bin/python "$@"
+          xvfb-run -a -s "-screen 0 3840x2160x24" ./squashfs-root/usr/bin/python "$@"
           WRAPPER_EOF
           chmod +x freecad-python
           
-          # Add to PATH
+          # Add to PATH and suppress Fontconfig warnings
           echo "$PWD" >> $GITHUB_PATH
+          echo "FONTCONFIG_FILE=/etc/fonts/fonts.conf" >> $GITHUB_ENV
       
       - name: Install Python dependencies for validation
         run: |
-          pip install matplotlib numpy
+          pip install -r requirements.txt
+          # Also install shipshape into FreeCAD's bundled Python (used for mass/buoyancy/gz)
+          ./squashfs-root/usr/bin/python -m pip install shipshape==0.9.0
 
       - name: Cache ngspice shared library
         id: cache-ngspice
@@ -107,6 +110,15 @@ jobs:
         run: |
           make required-all
 
+      - name: Debug render sizes
+        run: |
+          echo "=== Buoyancy design render sizes ==="
+          for img in artifact/*.buoyancy_design.render.*.png; do
+            if [ -f "$img" ]; then
+              echo "$(basename $img): $(identify -format '%wx%h' "$img")"
+            fi
+          done
+
       - name: Generate downloads YAML files
         run: |
           python3 docs/generate_downloads_yaml.py
@@ -121,7 +133,7 @@ jobs:
 
       - name: Generate diagrams
         run: |
-          python3 -m src.validate_structure.diagrams
+          PYTHONPATH=. python3 -m src.structural.diagrams
 
       - name: Copy constant files to docs/_data
         run: |

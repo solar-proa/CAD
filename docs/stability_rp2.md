@@ -35,19 +35,19 @@ The buoyancy equilibrium is computed using Newton's method, iteratively adjustin
 
 | Parameter | Value |
 |-----------|-------|
-| Submerged volume | {{ site.data.rp2_beaching_buoyancy.vaka.submerged_volume_liters }} liters |
-| Total volume | {{ site.data.rp2_beaching_buoyancy.vaka.total_volume_liters }} liters |
-| Submerged percentage | {{ site.data.rp2_beaching_buoyancy.vaka.submerged_percent }}% |
-| Z position (world) | {{ site.data.rp2_beaching_buoyancy.vaka.z_world_mm }} mm |
+| Submerged volume | {{ site.data.rp2_beaching_buoyancy.hull_groups.vaka.submerged_volume_liters }} liters |
+| Total volume | {{ site.data.rp2_beaching_buoyancy.hull_groups.vaka.total_volume_liters }} liters |
+| Submerged percentage | {{ site.data.rp2_beaching_buoyancy.hull_groups.vaka.submerged_percent }}% |
+| Z position (world) | {{ site.data.rp2_beaching_buoyancy.hull_groups.vaka.z_world_mm }} mm |
 
 ### Ama (Outrigger Float)
 
 | Parameter | Value |
 |-----------|-------|
-| Submerged volume | {{ site.data.rp2_beaching_buoyancy.ama.submerged_volume_liters }} liters |
-| Total volume | {{ site.data.rp2_beaching_buoyancy.ama.total_volume_liters }} liters |
-| Submerged percentage | {{ site.data.rp2_beaching_buoyancy.ama.submerged_percent }}% |
-| Z position (world) | {{ site.data.rp2_beaching_buoyancy.ama.z_world_mm }} mm |
+| Submerged volume | {{ site.data.rp2_beaching_buoyancy.hull_groups.ama.submerged_volume_liters }} liters |
+| Total volume | {{ site.data.rp2_beaching_buoyancy.hull_groups.ama.total_volume_liters }} liters |
+| Submerged percentage | {{ site.data.rp2_beaching_buoyancy.hull_groups.ama.submerged_percent }}% |
+| Z position (world) | {{ site.data.rp2_beaching_buoyancy.hull_groups.ama.z_world_mm }} mm |
 
 ### Centers of Mass and Buoyancy
 
@@ -56,7 +56,7 @@ The buoyancy equilibrium is computed using Newton's method, iteratively adjustin
 | Center of Gravity | {{ site.data.rp2_beaching_buoyancy.center_of_gravity_world.x }} | {{ site.data.rp2_beaching_buoyancy.center_of_gravity_world.y }} | {{ site.data.rp2_beaching_buoyancy.center_of_gravity_world.z }} |
 | Center of Buoyancy | {{ site.data.rp2_beaching_buoyancy.center_of_buoyancy.x }} | {{ site.data.rp2_beaching_buoyancy.center_of_buoyancy.y }} | {{ site.data.rp2_beaching_buoyancy.center_of_buoyancy.z }} |
 
-See [implementation](https://github.com/solar-proa/CAD/blob/main/src/buoyancy/__main__.py).
+See [implementation](https://github.com/shipshape-marine/shipshape/blob/main/src/shipshape/buoyancy/__main__.py).
 
 ---
 
@@ -116,7 +116,7 @@ For passenger comfort, roll periods of 6-12 seconds are typically preferred. The
 
 **Critical consideration:** If wave periods in the operating area are 3-6 seconds (typical for coastal waters), the vessel may experience pitch resonance, which could be uncomfortable for passengers.
 
-See [implementation](https://github.com/solar-proa/CAD/blob/main/src/gz/__main__.py).
+See [implementation](https://github.com/shipshape-marine/shipshape/blob/main/src/shipshape/gz/__main__.py).
 
 ---
 

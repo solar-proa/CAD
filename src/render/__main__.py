@@ -124,14 +124,22 @@ def export_renders(fcstd_path, output_render, background='#C6D2FF'):
     except:
         pass
 
+    # Hide water surface for renders — transparency doesn't work in headless
+    # mode, causing it to render as an opaque white slab. The water surface
+    # is still present in the FCStd for interactive viewing in FreeCAD.
+    for obj in doc.Objects:
+        if hasattr(obj, 'Label') and 'Water' in (obj.Label or ''):
+            if hasattr(obj, 'ViewObject') and obj.ViewObject:
+                obj.ViewObject.Visibility = False
+
     # Export each view
     for view_name, view_method in views:
         print(f"Exporting {view_name} view...")
-        
+
         # Set the view
         getattr(view, view_method)()
         view.fitAll()
-        
+
         # Export as PNG
         clean_name = base_name.replace('.color', '')
         output_path = os.path.join(output_render, f"{clean_name}.render.{view_name}.png")

@@ -117,7 +117,14 @@ our electric marine propulsion partner who sponsors the electric propulsion
 system for Roti Proa II.
 
 <div style="margin-bottom: 3em;">
-  <img src="{{ '/logos/dexmarine.png' | relative_url }}" alt="Dexmarine - Marine Supply Service" style="width: 20%; max-width: 1200px; height: auto; border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.15); display: block; margin: 0 auto;">
+  <img src="{{ '/logos/dexmarine.png' | relative_url }}" alt="Dexmarine - Marine Supply Service" style="width: 30%; max-width: 1200px; height: auto; border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.15); display: block; margin: 0 auto;">
+</div>
+
+Our Solar Panel Partners are [Rezeca Renewables Pte Ltd](https://rezeca.com/) and [Aiko Solar Energy Co., Ltd.](https://aikosolar.com/), who generously supply the solar panels for our Minimal Viable Product [Roti Proa II](/rp2.html).
+
+<div style="display: flex; justify-content: center; align-items: center; gap: 2em; margin-bottom: 3em;">
+  <img src="{{ '/logos/rezeca.svg' | relative_url }}" alt="Rezeca Renewables Pte Ltd" style="width: 30%; max-width: 300px; height: auto; border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.15);">
+  <img src="{{ '/logos/aiko.png' | relative_url }}" alt="Aiko Solar Energy Co., Ltd." style="width: 30%; max-width: 300px; height: auto; border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.15);">
 </div>
 
 We welcome further strategic partners for:
@@ -126,7 +133,6 @@ We welcome further strategic partners for:
 - **Joint development** of eco-tourism protocols
 - **Co-branding opportunities** for sustainability leadership
 - **CSR alignment** through maritime innovation support
-- **Solar power systems** for exploring sustainable maritime transport
 
 Partnership structures can be flexibly tailored to organizational priorities.
 
@@ -152,6 +158,11 @@ National University of Singapore.
 - Rahul Pradhan, Electrical Engineering, BEng 2029
 
 - Tan Jia Jun, Mechanical Engineering, BEng 2027
+
+<div style="margin-bottom: 3em;">
+  <img src="{{ '/images/team.jpg' | relative_url }}" alt="Roti Proa II - Solar-Electric Day Tourism Vessel" style="width: 100%; max-width: 800px; height: auto; border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.15); display: block; margin: 0 auto;">
+  <p style="text-align: center; color: #666; font-size: 0.9em; margin-top: 0.5em;">Solar Proa team at 2026 CNY pizza party; from left to right: Jia Jun, Rahul, (Kelly,) Luke, Vikram, Qian Fu, Julia, and Clara; background: Solar Proa II construction site at NUS with the state of the ama as of 13/2/2026</p>
+</div>
 
 **Technical Advisors:**
 

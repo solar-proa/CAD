@@ -122,13 +122,19 @@ untuk Roti Proa II.
   <img src="{{ '/logos/dexmarine.png' | relative_url }}" alt="Dexmarine - Marine Supply Service" style="width: 20%; max-width: 1200px; height: auto; border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.15); display: block; margin: 0 auto;">
 </div>
 
+Mitra Panel Surya kami adalah [Rezeca Renewables Pte Ltd](https://rezeca.com/) dan [Aiko Solar Energy Co., Ltd.](https://aikosolar.com/), yang dengan murah hati menyediakan panel surya untuk Produk Minimal Viable kami [Roti Proa II](/id/rp2.html).
+
+<div style="display: flex; justify-content: center; align-items: center; gap: 2em; margin-bottom: 3em;">
+  <img src="{{ '/logos/rezeca.svg' | relative_url }}" alt="Rezeca Renewables Pte Ltd" style="width: 20%; max-width: 300px; height: auto; border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.15);">
+  <img src="{{ '/logos/aiko.png' | relative_url }}" alt="Aiko Solar Energy Co., Ltd." style="width: 20%; max-width: 300px; height: auto; border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.15);">
+</div>
+
 Kami menyambut mitra strategis lebih lanjut untuk:
 
 - **Kolaborasi uji lapangan** dan umpan balik operasional
 - **Pengembangan bersama** protokol eko-wisata
 - **Peluang co-branding** untuk kepemimpinan keberlanjutan
 - **Keselarasan CSR** melalui dukungan inovasi maritim
-- **Sistem tenaga surya** untuk mengeksplorasi transportasi maritim berkelanjutan
 
 Struktur kemitraan dapat disesuaikan secara fleksibel dengan prioritas organisasi.
 
@@ -152,7 +158,14 @@ National University of Singapore).
 
 - Ong Miao Ying, Clara, Robotics & Machine Intelligence, Second Major in Innovation & Design, BEng 2029
 
+- Rahul Pradhan, Electrical Engineering, BEng 2029
+
 - Tan Jia Jun, Mechanical Engineering, BEng 2027
+
+<div style="margin-bottom: 3em;">
+  <img src="{{ '/images/team.jpg' | relative_url }}" alt="Roti Proa II - Kapal Wisata Harian Bertenaga Surya-Listrik" style="width: 100%; max-width: 800px; height: auto; border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.15); display: block; margin: 0 auto;">
+  <p style="text-align: center; color: #666; font-size: 0.9em; margin-top: 0.5em;">Tim Solar Proa di pesta pizza Imlek 2026; dari kiri ke kanan: Jia Jun, Rahul, (Kelly,) Luke, Vikram, Qian Fu, Julia, dan Clara; latar belakang: lokasi konstruksi Solar Proa II di NUS dengan kondisi ama per 13/2/2026</p>
+</div>
 
 **Penasihat Teknis:**
 

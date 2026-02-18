@@ -22,10 +22,16 @@ ifeq ($(UNAME),Darwin)
 	FREECAD_CMD := $(FREECAD_APP) --console
 	FREECAD_PYTHON := $(FREECAD_BUNDLE)/Contents/Resources/bin/python
 	FILTER_NOISE := 2>&1 | grep -v "3DconnexionNavlib" | grep -v "^$$"
+# Conda env with FreeCAD (for geometry modules via shipshape)
+	CONDA_PYTHON := /Users/henz/anaconda3/envs/freecad/bin/python
+	FREECAD_LIB := /Users/henz/anaconda3/envs/freecad/lib
 else
 	FREECAD_CMD := xvfb-run -a freecadcmd
 	FREECAD_PYTHON := freecad-python
 	FILTER_NOISE :=
+# On Linux (CI), use freecad-python wrapper directly
+	CONDA_PYTHON := $(FREECAD_PYTHON)
+	FREECAD_LIB :=
 endif
 
 # ==============================================================================
@@ -123,6 +129,7 @@ help:
 	@echo "  make required-all           - Run all required stages for all boats and configurations"
 	@echo "                                Required stages are specified in constants/configurations"
 	@echo "  make design                 - Generate single design (BOAT=$(BOAT) CONFIGURATION=$(CONFIGURATION))"
+	@echo "  make cables                 - Add power cables to design"
 	@echo "  make color                  - Apply color scheme to design (MATERIAL=$(MATERIAL))"
 	@echo "  make step                   - Export design to STEP format (geometry only)"
 	@echo "  make render                 - Render images (applies colors then renders)"
@@ -236,7 +243,7 @@ sync-docs:
 .PHONY: diagrams
 diagrams: 
 	@echo "making all diagrams..."
-	$(PYTHON) -m src.validate_structure.diagrams
+	PYTHONPATH=$(PWD) python3 -m src.structural.diagrams
 
 # serve website locally
 .PHONY: localhost
@@ -264,14 +271,13 @@ graph:
 # PARAMETER COMPUTATION
 # ==============================================================================
 
-PARAMETER_DIR := $(SRC_DIR)/parameter
-PARAMETER_SOURCE := $(wildcard $(PARAMETER_DIR)/*.py)
 PARAMETER_ARTIFACT := $(ARTIFACT_DIR)/$(BOAT).$(CONFIGURATION).parameter.json
 
-$(PARAMETER_ARTIFACT): $(BOAT_FILE) $(CONFIGURATION_FILE) $(PARAMETER_SOURCE)
+$(PARAMETER_ARTIFACT): $(BOAT_FILE) $(CONFIGURATION_FILE)
 	@echo "Computing parameters for $(BOAT) and $(CONFIGURATION)..."
 	@mkdir -p $(ARTIFACT_DIR)
-	@$(PYTHON) -m src.parameter \
+	@PYTHONPATH=$(PWD) python3 -m shipshape.parameter \
+		--compute src.parameter.compute \
 		--boat $(BOAT_FILE) \
 		--configuration $(CONFIGURATION_FILE) \
 		--output $@
@@ -305,6 +311,32 @@ $(DESIGN_ARTIFACT): $(PARAMETER_ARTIFACT) $(DESIGN_SOURCE) | $(DESIGN_DIR)
 
 .PHONY: design
 design: $(DESIGN_ARTIFACT)
+
+# ==============================================================================
+# ADD POWER CABLES
+# ==============================================================================
+
+CABLES_DIR := $(SRC_DIR)/power_cables
+CABLES_SOURCE := $(wildcard $(CABLES_DIR)/*.py)
+CABLES_ARTIFACT := $(ARTIFACT_DIR)/$(BOAT).$(CONFIGURATION).cables.FCStd
+
+$(CABLES_ARTIFACT): $(DESIGN_ARTIFACT) $(CABLES_SOURCE) $(PARAMETER_ARTIFACT) | $(ARTIFACT_DIR)
+	@echo "Adding power cables to: $(BOAT).$(CONFIGURATION)"
+	@if [ "$(UNAME)" = "Darwin" ]; then \
+		bash $(CABLES_DIR)/power_cables_mac.sh \
+			--design "$(DESIGN_ARTIFACT)" \
+			--params "$(PARAMETER_ARTIFACT)" \
+			--outputdesign "$(CABLES_ARTIFACT)"; \
+	else \
+		$(FREECAD_PYTHON) -m src.power_cables \
+			--design "$(DESIGN_ARTIFACT)" \
+			--params "$(PARAMETER_ARTIFACT)" \
+			--outputdesign "$(CABLES_ARTIFACT)"; \
+	fi
+	@echo "✓ Cables added: $(CABLES_ARTIFACT)"
+
+.PHONY: cables
+cables: $(CABLES_ARTIFACT)
 
 # ==============================================================================
 # COLOR THE DESIGNS
@@ -343,19 +375,12 @@ color: $(COLOR_ARTIFACT)
 # FIND THE MASS OF THE PARTS AND COMPUTE THE TOTAL MASS
 # ==============================================================================
 
-MASS_DIR := $(SRC_DIR)/mass
-MASS_SOURCE := $(wildcard $(MASS_DIR)/*.py)
 MASS_ARTIFACT := $(ARTIFACT_DIR)/$(BOAT).$(CONFIGURATION).mass.json
 
-$(MASS_ARTIFACT): $(DESIGN_ARTIFACT) $(MATERIAL_FILE) $(MASS_SOURCE) | $(ARTIFACT_DIR)
+$(MASS_ARTIFACT): $(DESIGN_ARTIFACT) $(MATERIAL_FILE) | $(ARTIFACT_DIR)
 	@echo "Running mass analysis: $(BOAT).$(CONFIGURATION)"
-	@if [ "$(UNAME)" = "Darwin" ]; then \
-		PYTHONPATH=$(FREECAD_BUNDLE)/Contents/Resources/lib:$(FREECAD_BUNDLE)/Contents/Resources/Mod:$(PWD) \
-		DYLD_LIBRARY_PATH=$(FREECAD_BUNDLE)/Contents/Frameworks:$(FREECAD_BUNDLE)/Contents/Resources/lib \
-		$(FREECAD_PYTHON) -m src.mass --design $(DESIGN_ARTIFACT) --materials $(MATERIAL_FILE) --output $@; \
-	else \
-		PYTHONPATH=$(PWD):$(PWD)/src/design $(FREECAD_PYTHON) -m src.mass --design $(DESIGN_ARTIFACT) --materials $(MATERIAL_FILE) --output $@; \
-	fi
+	@PYTHONPATH=$(FREECAD_LIB):$(PWD) $(CONDA_PYTHON) -m shipshape.mass \
+		--design $(DESIGN_ARTIFACT) --materials $(MATERIAL_FILE) --output $@
 
 .PHONY: mass
 mass: $(MASS_ARTIFACT)
@@ -419,27 +444,17 @@ step: $(STEP_ARTIFACT)
 # BUOYANCY EQUILIBRIUM ANALYSIS
 # ==============================================================================
 
-BUOYANCY_DIR := $(SRC_DIR)/buoyancy
-BUOYANCY_SOURCE := $(wildcard $(BUOYANCY_DIR)/*.py) $(wildcard $(SRC_DIR)/physics/*.py)
+HULL_GROUPS_FILE := $(CONST_DIR)/hull_groups.json
 BUOYANCY_ARTIFACT := $(ARTIFACT_DIR)/$(BOAT).$(CONFIGURATION).buoyancy.json
 
-$(BUOYANCY_ARTIFACT): $(DESIGN_ARTIFACT) $(MASS_ARTIFACT) $(MATERIAL_FILE) $(BUOYANCY_SOURCE) | $(ARTIFACT_DIR)
+$(BUOYANCY_ARTIFACT): $(DESIGN_ARTIFACT) $(MASS_ARTIFACT) $(MATERIAL_FILE) $(HULL_GROUPS_FILE) | $(ARTIFACT_DIR)
 	@echo "Running buoyancy analysis: $(BOAT).$(CONFIGURATION)"
-	@if [ "$(UNAME)" = "Darwin" ]; then \
-		PYTHONPATH=$(FREECAD_BUNDLE)/Contents/Resources/lib:$(FREECAD_BUNDLE)/Contents/Resources/Mod:$(PWD) \
-		DYLD_LIBRARY_PATH=$(FREECAD_BUNDLE)/Contents/Frameworks:$(FREECAD_BUNDLE)/Contents/Resources/lib \
-		$(FREECAD_PYTHON) -m src.buoyancy \
-			--design $(DESIGN_ARTIFACT) \
-			--mass $(MASS_ARTIFACT) \
-			--materials $(MATERIAL_FILE) \
-			--output $@; \
-	else \
-		PYTHONPATH=$(PWD) $(FREECAD_PYTHON) -m src.buoyancy \
-			--design $(DESIGN_ARTIFACT) \
-			--mass $(MASS_ARTIFACT) \
-			--materials $(MATERIAL_FILE) \
-			--output $@; \
-	fi
+	@PYTHONPATH=$(FREECAD_LIB):$(PWD) $(CONDA_PYTHON) -m shipshape.buoyancy \
+		--design $(DESIGN_ARTIFACT) \
+		--mass $(MASS_ARTIFACT) \
+		--materials $(MATERIAL_FILE) \
+		--hull-groups $(HULL_GROUPS_FILE) \
+		--output $@
 
 .PHONY: buoyancy
 buoyancy: $(BUOYANCY_ARTIFACT)
@@ -449,30 +464,20 @@ buoyancy: $(BUOYANCY_ARTIFACT)
 # GZ CURVE (RIGHTING ARM) ANALYSIS
 # ==============================================================================
 
-GZ_DIR := $(SRC_DIR)/gz
-GZ_SOURCE := $(wildcard $(GZ_DIR)/*.py) $(wildcard $(SRC_DIR)/physics/*.py)
 GZ_ARTIFACT := $(ARTIFACT_DIR)/$(BOAT).$(CONFIGURATION).gz.json
 GZ_PNG := $(ARTIFACT_DIR)/$(BOAT).$(CONFIGURATION).gz.png
 
-$(GZ_ARTIFACT): $(BUOYANCY_ARTIFACT) $(DESIGN_ARTIFACT) $(PARAMETER_ARTIFACT) $(GZ_SOURCE) | $(ARTIFACT_DIR)
+$(GZ_ARTIFACT): $(BUOYANCY_ARTIFACT) $(DESIGN_ARTIFACT) $(PARAMETER_ARTIFACT) | $(ARTIFACT_DIR)
 	@echo "Computing GZ curve: $(BOAT).$(CONFIGURATION)"
-	@if [ "$(UNAME)" = "Darwin" ]; then \
-		PYTHONPATH=$(FREECAD_BUNDLE)/Contents/Resources/lib:$(FREECAD_BUNDLE)/Contents/Resources/Mod:$(PWD) \
-		DYLD_LIBRARY_PATH=$(FREECAD_BUNDLE)/Contents/Frameworks:$(FREECAD_BUNDLE)/Contents/Resources/lib \
-		$(FREECAD_PYTHON) -m src.gz \
-			--design $(DESIGN_ARTIFACT) \
-			--buoyancy $(BUOYANCY_ARTIFACT) \
-			--parameters $(PARAMETER_ARTIFACT) \
-			--output $@ \
-			--output-png $(GZ_PNG); \
-	else \
-		PYTHONPATH=$(PWD) $(FREECAD_PYTHON) -m src.gz \
-			--design $(DESIGN_ARTIFACT) \
-			--buoyancy $(BUOYANCY_ARTIFACT) \
-			--parameters $(PARAMETER_ARTIFACT) \
-			--output $@ \
-			--output-png $(GZ_PNG); \
-	fi
+	@PYTHONPATH=$(FREECAD_LIB):$(PWD) $(CONDA_PYTHON) -m shipshape.gz \
+		--design $(DESIGN_ARTIFACT) \
+		--buoyancy $(BUOYANCY_ARTIFACT) \
+		--parameters $(PARAMETER_ARTIFACT) \
+		--output $@ \
+		--output-png $(GZ_PNG) \
+		--min-heel -40 \
+		--max-heel 50
+	@echo "✓ GZ curve: $@"
 
 .PHONY: gz
 gz: $(GZ_ARTIFACT)
@@ -536,13 +541,11 @@ buoyancy-render: $(BUOYANCY_DESIGN_ARTIFACT) $(RENDER_SOURCE)
 # STRUCTURAL VALIDATION
 # ==============================================================================
 
-VALIDATE_STRUCTURE_DIR := $(SRC_DIR)/validate_structure
-VALIDATE_STRUCTURE_SOURCE := $(wildcard $(VALIDATE_STRUCTURE_DIR)/*.py)
 VALIDATE_STRUCTURE_ARTIFACT := $(ARTIFACT_DIR)/$(BOAT).$(CONFIGURATION).validate_structure.json
 
-$(VALIDATE_STRUCTURE_ARTIFACT): $(PARAMETER_ARTIFACT) $(MASS_ARTIFACT) $(GZ_ARTIFACT) $(VALIDATE_STRUCTURE_SOURCE) | $(ARTIFACT_DIR)
+$(VALIDATE_STRUCTURE_ARTIFACT): $(PARAMETER_ARTIFACT) $(MASS_ARTIFACT) $(GZ_ARTIFACT) | $(ARTIFACT_DIR)
 	@echo "Running structural validation: $(BOAT).$(CONFIGURATION)"
-	@$(PYTHON) -m src.validate_structure \
+	@PYTHONPATH=$(PWD) python3 -m src.structural \
 		--parameters $(PARAMETER_ARTIFACT) \
 		--mass $(MASS_ARTIFACT) \
 		--gz $(GZ_ARTIFACT) \

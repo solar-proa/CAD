@@ -89,6 +89,7 @@
       "transparency": 100,
       "display_mode": "Shaded",
       "density_kg_m3": 1.2,
+      "buoyancy_only": true,
       "description": "Trapped air volume (for buoyancy calculation)"
     },
     "solar": {
