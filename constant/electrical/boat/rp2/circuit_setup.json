@@ -35,6 +35,10 @@
         "load_1": {
             "choice": "Torqeedo_Cruise_4.0",
             "throttle": 1.0
+        },
+        "load_2": {
+            "choice": "Torqeedo_Cruise_6.0",
+            "throttle": 1.0
         }
     },
 
