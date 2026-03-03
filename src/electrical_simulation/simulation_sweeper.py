@@ -3,7 +3,7 @@ from .sweep_graph_generation import generate_graph
 from .pyspice_simulator import begin_simulation
 from .circuit_constructor import build_circuit_from_json
 
-SWEEP_INTERVAL_COUNT = 1
+SWEEP_INTERVAL_COUNT = 100
 
 
 def sweep_throttle(circuit_setup: json, save_path, ngspice_available, 
@@ -44,6 +44,7 @@ def sweep_panel_power(circuit_setup: json, save_path, ngspice_available,
         if analysis:
             results.append(result)
         else:
+            print("Simulation failed at panel power setting: {:.2f}%. Stopping sweep.".format(panel_power*100))
             panel_power_range = panel_power_range[:panel_power_range.index(panel_power)]
             break
         
