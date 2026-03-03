@@ -138,7 +138,7 @@ def generate_graph(results: list, x_axis: list, x_label: str = "",
         
         for category in power_display_choice:
             power_traces = extract_power_traces(results, category)
-            
+
             for label, values in power_traces.items():
                 ax.plot(x_axis, values, marker=MARKER_STYLE, markersize=MARKER_SIZE,
                        label=f"{category} - {label}",
@@ -228,10 +228,28 @@ def generate_graph(results: list, x_axis: list, x_label: str = "",
 
 def draw_warning_points(warning_points: list, ax):
     if warning_points:
-        for wp in warning_points:
-            ax.axvline(x=wp['x'], color='red', linestyle=DOTTED_STYLE, alpha=0.3, zorder=5)
-            ax.relim()
-            ax.autoscale_view()
+        # Group consecutive warning x-values into contiguous regions
+        x_values = sorted(set(wp['x'] for wp in warning_points))
+        if not x_values:
+            return
+        
+        regions = []
+        start = x_values[0]
+        end = x_values[0]
+        for x in x_values[1:]:
+            if x - end <= (x_values[-1] - x_values[0]) / max(len(x_values), 1) * 1.5:
+                end = x
+            else:
+                regions.append((start, end))
+                start = x
+                end = x
+        regions.append((start, end))
+        
+        for (r_start, r_end) in regions:
+            ax.axvspan(r_start, r_end, color='red', alpha=0.15, zorder=0)
+        
+        ax.relim()
+        ax.autoscale_view()
             
 def draw_equilibrium_points(equilibrium_points: list, ax):
     if equilibrium_points:
@@ -252,7 +270,6 @@ def extract_traces(results: list, category: str, data_type: str) -> Dict[str, Li
             continue
         
         category_data = result[category]
-        
         # Handle different data structures
         if 'data' in category_data:
             for array_item in category_data['data']:
@@ -275,7 +292,6 @@ def extract_traces(results: list, category: str, data_type: str) -> Dict[str, Li
                         
                     # Append value
                     traces[trace_name].append(value)
-    
     return traces
 
 
@@ -295,12 +311,16 @@ def extract_power_traces(results: list, category: str) -> Dict[str, List[float]]
             for array_item in category_data['data']:
                 voltages = array_item.get('voltage', {})
                 currents = array_item.get('current', {})
-                
+                #{'array_index': 1, 'voltage': {'load_load_torqeedo_cruise_6.0_positive': 40.94714341880578}, 'current': {'load_load_torqeedo_cruise_6.0_current': 44.619053880758926}}
                 # Match voltage and current keys to compute power
                 for v_key, v_value in voltages.items():
                     # Try to find matching current key
                     c_key = v_key.rstrip('_positive').rstrip('_negative')
-                    if c_key in currents:
+
+                    if c_key in currents or c_key + "_current" in currents:
+                        if "_current" in c_key:
+                            c_key = c_key.replace("_current", "")
+                            
                         trace_name = v_key
                         if 'array_index' in array_item:
                             trace_name = f"Arr{array_item['array_index']}_{v_key}"
@@ -310,5 +330,6 @@ def extract_power_traces(results: list, category: str) -> Dict[str, List[float]]
                         
                         power = v_value * currents[c_key]
                         power_traces[trace_name].append(power)
+                        
     
     return power_traces
