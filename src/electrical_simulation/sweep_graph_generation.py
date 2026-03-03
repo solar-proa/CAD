@@ -207,7 +207,7 @@ def generate_graph(results: list, x_axis: list, x_label: str = "",
                 warning_points.pop(idx) """
                 
             json.dump(warning_points, f, indent=4)
-            print(f"({len(warning_points)})\tWarning points saved to {save_path}.{WARNING_FILE_NAME}")
+            print(f"\n({len(warning_points)})\tWarning points saved to {save_path}.{WARNING_FILE_NAME}")
             
         with open(save_path + "." + ERROR_FILE_NAME, 'w') as f:
             errors = []

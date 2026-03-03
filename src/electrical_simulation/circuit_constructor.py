@@ -2,7 +2,7 @@ import json
 
 from PySpice.Spice.Netlist import Circuit # type: ignore
 
-from src.electrical_simulation.components.load_bak import Load_BAK
+from .components.load_bak import Load_BAK
 
 from .components.load_array import Load_Array
 from .components.load_balancer import Load_Balancer
