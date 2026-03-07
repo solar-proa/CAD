@@ -112,7 +112,33 @@ The solar array consists of **{{ total_panels }} panels** configured across {{ s
 
 ### Power Management
 
-<!-- Add MPPT, charge controllers, BMS details here -->
+{% assign mppt_count = 0 %}
+{% for entry in site.data.boat_rp2_circuit_setup.mppt_panel %}{% if entry[0] contains "config_" %}{% assign cfg = entry[1] %}
+{% if cfg.count > 0 %}
+{% assign mppt_count = mppt_count | plus: cfg.count %}
+{% endif %}
+{% endif %}{% endfor %}
+
+The power management system uses **{{ mppt_count }} MPPT charge controller(s)** to regulate solar input to the DC bus.
+
+{% for entry in site.data.boat_rp2_circuit_setup.mppt_panel %}{% if entry[0] contains "config_" %}{% assign cfg = entry[1] %}
+{% if cfg.count == 0 %}{% continue %}{% endif %}
+{% assign mppt_choice = cfg.mppt_info.choice %}
+{% assign mppt = site.data.components.MPPT[mppt_choice] %}
+
+#### MPPT: {{ mppt_choice | replace: "_", " " }}
+
+| Parameter | Value |
+|-----------|-------|
+| Model | {{ mppt_choice | replace: "_", " " }} |
+| Max Input Voltage | {{ mppt.max_input_voltage }} V |
+| Max Input Current | {{ mppt.max_input_current }} A |
+| Max Output Voltage | {{ mppt.max_output_voltage }} V |
+| Max Output Current | {{ mppt.max_output_current }} A |
+| Efficiency | {{ mppt.efficiency | times: 100 }}% |
+| Units in Use | {{ cfg.count }} |
+
+{% endif %}{% endfor %}
 
 ### Energy Storage
 
@@ -167,15 +193,82 @@ The propulsion system consists of **{{ load_count }} motor(s)** with a combined 
 
 The vessel uses a microcontroller-based sensor reading system (shown in the circuit diagram [above](#electrical-system-overview)) for monitoring:
 
-<!-- Add sensor and monitoring component details here -->
+#### Current Sensors
+
+**2× QNDBK1-21 Hall Effect Sensors**
+
+| Parameter | Value |
+|-----------|-------|
+| Model | QNDBK1-21 |
+| Current Rating | 100A (unidirectional) |
+| Output Voltage | 5V |
+| Quantity | 2 |
+
+**Sensor Placement:**
+
+| Sensor | Location | Measurement Purpose |
+|--------|----------|---------------------|
+| MPPT 1 | Output of MPPT arrays (DC bus solar input) | Total solar panel power input |
+| MPPT 2 | Before load (output after MPPT arrays + battery positive terminal) | Current the load is using |
+
+**Derived Calculations:**
+
+| Calculation | Formula | Interpretation |
+|-------------|---------|----------------|
+| Battery Current | MPPT 1 − MPPT 2 | > 0: Battery charging · < 0: Battery discharging |
+| Solar Input Current | MPPT 1 | Direct reading from solar array output |
+| Load Current | MPPT 2 | Direct reading of current to propulsion/loads |
+
+#### Monitoring Components
+
+**Signal Chain:**
+
+```
+Hall Effect Sensors → ADS1115 (ADC) → I2C Level Shifter → ESP8266 (MCU) → Local Server (API)
+```
+
+| Component | Description |
+|-----------|-------------|
+| **ADS1115** | 16-bit analog-to-digital converter (15-bit effective precision for unidirectional sensor output). Converts hall effect sensor voltage signals to digital values. |
+| **I2C Level Shifter** | Shifts I2C signal levels between the ADS1115 and ESP8266 for safe communication. |
+| **ESP8266** | Microcontroller unit that reads ADC values via I2C and transmits data to the monitoring server via HTTP POST requests. |
+| **Local Server** | Receives current data and calculates State of Charge (SoC) using coulomb counting. Provides pilot advisory interface. |
+
+**State of Charge Calculation:**
+
+The system calculates battery SoC using coulomb counting:
+
+$$
+\text{SoC}(t) = \text{SoC}(t_0) + \frac{1}{C_{\text{rated}}} \int_{t_0}^{t} I(\tau) \, d\tau
+$$
+
+Where:
+- $\text{SoC}(t)$ = State of Charge at time $t$
+- $\text{SoC}(t_0)$ = Initial State of Charge
+- $C_{\text{rated}}$ = Rated battery capacity (Ah)
+- $I(\tau)$ = Battery current (positive = charging, negative = discharging)
+
+**Pilot Advisory System:**
+
+The monitoring server provides real-time feedback to the pilot including:
+- Current battery SoC percentage
+- Estimated time to full charge (when solar input exceeds load)
+- Estimated time to depletion (when load exceeds solar input)
+- Throttle setting recommendations to maintain safe operating margins
 
 ### Safety Equipment
 
-<!-- Add fuses, breakers, disconnect switches, etc. here -->
+All fuses and circuit protection devices must be selected and placed in accordance with ABYC E-11 guidelines. Fuses should be installed as close to the power source as practical—within 180mm (7 inches) of the battery terminals for battery circuits, and at the source end of each branch circuit.
+
+Cable sizing must be determined using the simulation results in the [Circuit Configuration](#circuit-configuration) and [Operating Point](#operating-point) sections, selecting gauges that:
+1. Handle maximum expected current with appropriate safety margin
+2. Maintain voltage drop below **3%** for critical circuits (propulsion, navigation)
+3. Account for derating factors (ambient temperature, bundling, installation method)
+
+<!-- Add specific fuse and breaker component details here -->
 
 ---
 
-<br>
 <br>
 
 ## Circuit Configuration
