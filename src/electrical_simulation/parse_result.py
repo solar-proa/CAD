@@ -39,6 +39,37 @@ def parse_simulation_result(analysis, result, struc, SIMULATION_LOGGING=False, S
 
         if not matched:
             print(f"Missing node ({node_name}): {float(node.as_ndarray()[0]):.2f} V")
+    
+    # Post process voltage for battery
+    ## Current measurement is to ground instead of across the battery, resulting in batt0 24V and batt2 48v
+    for data in result['battery_result']['data']:
+        voltages:dict = data['voltage']
+        
+        pos = []
+        neg = []
+        
+        for key in voltages.keys():
+            matches = dict(re.findall(constants["ARRAY_DECODER_PATTERN"], key))
+            series_no = int(matches['s'])
+
+            if "positive" in key:
+                if len(pos) < series_no + 1:
+                    pos.extend([[] for _ in range(series_no + 1 - len(pos))])
+                pos[series_no] = (key, series_no)
+            elif "negative" in key:
+                if len(neg) < series_no + 1:
+                    neg.extend([[] for _ in range(series_no + 1 - len(neg))])
+                neg[series_no] = (key, series_no)
+        
+        pos.sort(key=lambda x: -x[1])
+        neg.sort(key=lambda x: x[1])
+        
+        for i in range(len(pos)):
+            if i == len(pos) - 1:
+                break
+            voltages[pos[i][0]] = voltages[pos[i][0]] - voltages[pos[i + 1][0]]
+        
+    #print(result['battery_result']['data'])
 
     # Branch currents
     for branch_name, branch in analysis.branches.items():

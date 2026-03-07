@@ -114,7 +114,7 @@ def start_voyage(circuit_setup: json, voyage_config_loc: str, save_path: str, ng
     generate_graph(results=results, x_axis=time_range_min, x_label="Time (minutes)",
                    voltage_display_choice=['load_result', "mppt_result"],
                    current_display_choice=['summary', 'load_result'],
-                   power_display_choice=['load_result'],
+                   power_display_choice=['load_result', 'battery_result'],
                    battery_capacity=battery_capacity_list,
                    save_path=save_path, constants=constants)   
     
