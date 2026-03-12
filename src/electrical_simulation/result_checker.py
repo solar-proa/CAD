@@ -78,7 +78,8 @@ Total Input Power: {input_power:.2f} W, restricted to: {actual_voltage_output*ac
                 "power_mechanical_w": motor_op.power_mechanical_w,
                 "power_electrical_w": motor_op.power_electrical_w,
                 "torque_nm": motor_op.torque_nm,
-                "is_stalled": motor_op.is_stalled
+                "is_stalled": motor_op.is_stalled,
+                "propeller_load_factor": motor_op.propeller_load_factor
             }
             # Add info message about motor model
             result["info"]["data"].append(

@@ -31,6 +31,7 @@ def start_voyage(circuit_setup: json, voyage_config_loc: str, save_path: str, ng
         duration_minutes = segment['duration_minutes']
         throttle_setting = segment['throttle']
         panel_power_setting = segment['solar_power']
+        propeller_load_factor = segment.get('propeller_load_factor', None)
         
         elapsed = 0
         while elapsed < duration_minutes:
@@ -40,6 +41,8 @@ def start_voyage(circuit_setup: json, voyage_config_loc: str, save_path: str, ng
             modifications['panel_power_setting'] = panel_power_setting
             modifications['throttle_setting'] = throttle_setting
             modifications['current_soc'] = current_soc
+            if propeller_load_factor is not None:
+                modifications['propeller_load_factor'] = propeller_load_factor
             
             circuit, component_object, errors = build_circuit_from_json(circuit_setup=circuit_setup, modifications=modifications, constants=constants)
             analysis, result = begin_simulation(circuit, component_object, errors, ngspice_available, constants=constants)

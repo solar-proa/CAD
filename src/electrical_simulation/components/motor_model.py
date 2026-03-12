@@ -47,6 +47,12 @@ class MotorConstants:
 class PropellerConstants:
     """Propeller load curve constants."""
     kp: float  # Load coefficient (N·m/(rad/s)²)
+    load_factor: float = 1.0  # 1.0 = startup/bollard, <1.0 = cruise equilibrium
+    
+    @property
+    def effective_kp(self) -> float:
+        """Kp scaled by load_factor to model reduced load at cruise speed."""
+        return self.kp * self.load_factor
 
 
 @dataclass
@@ -61,6 +67,7 @@ class MotorOperatingPoint:
     power_mechanical_w: float  # Mechanical power output (W)
     efficiency: float  # Motor efficiency (0-1)
     is_stalled: bool  # True if motor is in stall condition
+    propeller_load_factor: float = 1.0  # Load factor used (1.0=startup, <1.0=cruise)
     
 
 class MotorModel:
@@ -121,6 +128,7 @@ class MotorModel:
     
     def _zero_throttle_result(self) -> MotorOperatingPoint:
         """Return operating point for zero throttle."""
+        load_factor = self.propeller.load_factor if self.propeller else 1.0
         return MotorOperatingPoint(
             throttle=0.0,
             speed_rpm=0.0,
@@ -130,7 +138,8 @@ class MotorModel:
             power_electrical_w=0.0,
             power_mechanical_w=0.0,
             efficiency=0.0,
-            is_stalled=False
+            is_stalled=False,
+            propeller_load_factor=load_factor
         )
     
     def _solve_propeller_equilibrium(self, throttle: float) -> MotorOperatingPoint:
@@ -152,7 +161,7 @@ class MotorModel:
         ke = self.motor.ke
         r = self.motor.resistance
         i_nl = self.motor.no_load_current
-        kp = self.propeller.kp
+        kp = self.propeller.effective_kp
         
         # Initial guess: no-load speed (back-EMF equals applied voltage)
         omega_no_load = v_effective / ke if ke > 0 else 0
@@ -258,6 +267,8 @@ class MotorModel:
         # Speed in RPM
         rpm = omega * 60.0 / (2.0 * math.pi)
         
+        load_factor = self.propeller.load_factor if self.propeller else 1.0
+        
         return MotorOperatingPoint(
             throttle=throttle,
             speed_rpm=rpm,
@@ -267,7 +278,8 @@ class MotorModel:
             power_electrical_w=p_elec,
             power_mechanical_w=p_mech,
             efficiency=efficiency,
-            is_stalled=False
+            is_stalled=False,
+            propeller_load_factor=load_factor
         )
     
     def _stall_result(self, throttle: float, v_effective: float) -> MotorOperatingPoint:
@@ -280,6 +292,8 @@ class MotorModel:
         # Power is all dissipated as heat
         p_elec = self.bus_voltage * i_stall * throttle
         
+        load_factor = self.propeller.load_factor if self.propeller else 1.0
+        
         return MotorOperatingPoint(
             throttle=throttle,
             speed_rpm=0.0,
@@ -289,7 +303,8 @@ class MotorModel:
             power_electrical_w=p_elec,
             power_mechanical_w=0.0,
             efficiency=0.0,
-            is_stalled=True
+            is_stalled=True,
+            propeller_load_factor=load_factor
         )
     
     def get_power_from_throttle(self, throttle: float) -> float:
@@ -342,7 +357,8 @@ def create_motor_model_from_config(
     propeller = None
     if "propeller_kp" in motor_config:
         propeller = PropellerConstants(
-            kp=motor_config["propeller_kp"]
+            kp=motor_config["propeller_kp"],
+            load_factor=motor_config.get("propeller_load_factor", 1.0)
         )
     
     max_power = motor_config.get("total_power")

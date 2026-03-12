@@ -251,7 +251,8 @@ Battery discharge limiter. Acts as a clamp to limit the battery to its specified
                     "power_mechanical_w": 1520.3,
                     "power_electrical_w": 1708.2,
                     "torque_nm": 4.47,
-                    "is_stalled": false
+                    "is_stalled": false,
+                    "propeller_load_factor": 1.0
                 }
             },
             {
@@ -298,9 +299,27 @@ When motor physics constants are configured in `components.json`, the simulation
     "motor_resistance": 0.05,   // Winding resistance (ohms)
     "motor_no_load_current": 1.5, // No-load current (amps)
     "propeller_kp": 0.0008,     // Propeller load coefficient (N·m/(rad/s)²)
+    "propeller_load_factor": 1.0, // 1.0=startup/bollard, 0.3-0.6=cruise equilibrium
     "propeller_enabled": true   // Enable propeller coupling
 }
 ```
+
+**Propeller Load Factor:**
+
+The `propeller_load_factor` parameter (0.0–1.0, default 1.0) scales the propeller load coefficient `propeller_kp` to simulate different operating conditions:
+
+| Value | Condition | Description |
+|-------|-----------|-------------|
+| 1.0   | Startup / bollard pull | Boat stationary, propeller pushes against still water. Maximum power draw. |
+| 0.5   | Moderate cruise | Water flowing through propeller reduces effective load by ~50%. |
+| 0.3   | High-speed cruise | Propeller advancing rapidly, low slip, minimal loading. |
+| 0.0   | Free-spinning | No propeller load (theoretical boundary). |
+
+At startup (load_factor=1.0), power draw is **higher** than at cruise equilibrium because the propeller faces maximum water resistance. As the boat accelerates and water flows into the propeller, the effective load decreases.
+
+You can estimate the factor from manufacturer power-at-speed data: if the motor draws 4kW at bollard pull but only 1.5kW at cruise speed, use `propeller_load_factor ≈ 0.375`.
+
+The parameter can be overridden at runtime via `--propeller-load-factor` CLI argument, or set per-segment in voyage configurations.
 
 **Backward compatibility:** If motor physics constants are not provided, the simulation falls back to the original linear model where `power = throttle × total_power`.
 
@@ -312,6 +331,7 @@ When motor physics constants are configured in `components.json`, the simulation
 - `power_electrical_w`: Electrical power consumption
 - `torque_nm`: Motor torque in N·m (null for linear model)
 - `is_stalled`: True if motor is in stall condition
+- `propeller_load_factor`: Load factor used (1.0=startup, <1.0=cruise)
 
 Note: Due to limitations in PySpice simulation of a current limiter, if > 1 load is connected and in total is drawing > 200% of the bus output, the current of the motor may be negative (Indicating the load is a power source).
 

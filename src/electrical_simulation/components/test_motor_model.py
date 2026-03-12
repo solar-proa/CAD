@@ -279,5 +279,99 @@ class TestNonLinearPowerScaling:
         assert p_100 > p_75
 
 
+class TestPropellerLoadFactor:
+    """Test propeller load factor for cruise equilibrium simulation."""
+    
+    def test_default_load_factor_is_one(self):
+        """Default load factor should be 1.0 (startup/bollard)."""
+        propeller = PropellerConstants(kp=0.0008)
+        assert propeller.load_factor == 1.0
+        assert propeller.effective_kp == 0.0008
+    
+    def test_load_factor_scales_kp(self):
+        """Load factor should scale effective_kp."""
+        propeller = PropellerConstants(kp=0.0008, load_factor=0.5)
+        assert abs(propeller.effective_kp - 0.0004) < 1e-10
+    
+    def test_load_factor_zero_gives_zero_kp(self):
+        """Load factor 0 should give zero effective propeller load."""
+        propeller = PropellerConstants(kp=0.0008, load_factor=0.0)
+        assert propeller.effective_kp == 0.0
+    
+    def test_lower_load_factor_reduces_power(self):
+        """Lower load factor (cruise) should draw less power than startup."""
+        motor = MotorConstants(kv=150, resistance=0.05, no_load_current=1.0)
+        
+        prop_startup = PropellerConstants(kp=0.0008, load_factor=1.0)
+        prop_cruise = PropellerConstants(kp=0.0008, load_factor=0.5)
+        
+        model_startup = MotorModel(motor, prop_startup, bus_voltage=48.0)
+        model_cruise = MotorModel(motor, prop_cruise, bus_voltage=48.0)
+        
+        op_startup = model_startup.calculate_operating_point(0.75)
+        op_cruise = model_cruise.calculate_operating_point(0.75)
+        
+        assert op_startup.power_electrical_w > op_cruise.power_electrical_w
+        assert op_startup.propeller_load_factor == 1.0
+        assert op_cruise.propeller_load_factor == 0.5
+    
+    def test_lower_load_factor_higher_speed(self):
+        """Lower load factor should result in higher motor speed."""
+        motor = MotorConstants(kv=150, resistance=0.05)
+        
+        prop_startup = PropellerConstants(kp=0.0008, load_factor=1.0)
+        prop_cruise = PropellerConstants(kp=0.0008, load_factor=0.5)
+        
+        model_startup = MotorModel(motor, prop_startup, bus_voltage=48.0)
+        model_cruise = MotorModel(motor, prop_cruise, bus_voltage=48.0)
+        
+        op_startup = model_startup.calculate_operating_point(0.75)
+        op_cruise = model_cruise.calculate_operating_point(0.75)
+        
+        assert op_cruise.speed_rpm > op_startup.speed_rpm
+    
+    def test_load_factor_in_operating_point_output(self):
+        """Operating point should include the load factor used."""
+        motor = MotorConstants(kv=150, resistance=0.05)
+        propeller = PropellerConstants(kp=0.0008, load_factor=0.3)
+        model = MotorModel(motor, propeller, bus_voltage=48.0)
+        
+        op = model.calculate_operating_point(0.5)
+        assert op.propeller_load_factor == 0.3
+    
+    def test_zero_throttle_includes_load_factor(self):
+        """Zero throttle result should still include load factor."""
+        motor = MotorConstants(kv=150, resistance=0.05)
+        propeller = PropellerConstants(kp=0.0008, load_factor=0.4)
+        model = MotorModel(motor, propeller, bus_voltage=48.0)
+        
+        op = model.calculate_operating_point(0.0)
+        assert op.propeller_load_factor == 0.4
+    
+    def test_config_factory_reads_load_factor(self):
+        """create_motor_model_from_config should read propeller_load_factor."""
+        config = {
+            "motor_kv": 150,
+            "motor_resistance": 0.05,
+            "propeller_kp": 0.0008,
+            "propeller_load_factor": 0.5
+        }
+        model = create_motor_model_from_config(config, bus_voltage=48.0)
+        
+        assert model.propeller.load_factor == 0.5
+        assert abs(model.propeller.effective_kp - 0.0004) < 1e-10
+    
+    def test_config_factory_defaults_load_factor(self):
+        """create_motor_model_from_config should default load_factor to 1.0."""
+        config = {
+            "motor_kv": 150,
+            "motor_resistance": 0.05,
+            "propeller_kp": 0.0008
+        }
+        model = create_motor_model_from_config(config, bus_voltage=48.0)
+        
+        assert model.propeller.load_factor == 1.0
+
+
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])

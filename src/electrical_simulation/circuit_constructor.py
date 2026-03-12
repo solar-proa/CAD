@@ -90,6 +90,9 @@ def build_circuit_from_json(circuit_setup: json, modifications: dict = {},
             else:
                 input_data['load'][key]['throttle'] = modifications['throttle_setting']
         
+        if modifications.get('propeller_load_factor') is not None:
+            input_data['load'][key]['propeller_load_factor'] = modifications['propeller_load_factor']
+        
         #NEW
         load = Load(circuit, components, load_name=load_name, constants=constants, **input_data['load'][key])
         #END NEW

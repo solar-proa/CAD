@@ -55,6 +55,8 @@ def main():
                         help='Enable simulation logging')
     parser.add_argument('--show-plot', action='store_true',
                         help='Display plots interactively')
+    parser.add_argument('--propeller-load-factor', type=float, default=None,
+                        help='Propeller load factor (0-1). 1.0=startup/bollard, 0.3-0.6=cruise. Overrides config value.')
 
     args = parser.parse_args()
 
@@ -89,7 +91,10 @@ def main():
         run_voyage_simulation(args, circuit_setup, ngspice_available, output_dir, constants)
 
 def run_operating_point_simulation(args, circuit_setup, ngspice_available, output_dir, constants):
-    circuit, component_object, errors = build_circuit_from_json(circuit_setup=circuit_setup, constants=constants)
+    modifications = {}
+    if args.propeller_load_factor is not None:
+        modifications['propeller_load_factor'] = args.propeller_load_factor
+    circuit, component_object, errors = build_circuit_from_json(circuit_setup=circuit_setup, modifications=modifications, constants=constants)
     analysis, result = begin_simulation(
         circuit=circuit,
         component_object=component_object, 
@@ -110,7 +115,8 @@ def run_sweep_throttle(args, circuit_setup, ngspice_available, output_dir, const
         ngspice_available=ngspice_available,
         simulation_logging=args.verbose,
         save_output=True,
-        constants=constants) 
+        constants=constants,
+        propeller_load_factor=args.propeller_load_factor) 
     print(f"✓ Sweep throttle simulation complete: {output_dir}.sweep_throttle")
     
 def run_sweep_panel_power(args, circuit_setup, ngspice_available, output_dir, constants):
@@ -120,7 +126,8 @@ def run_sweep_panel_power(args, circuit_setup, ngspice_available, output_dir, co
         ngspice_available=ngspice_available,
         simulation_logging=args.verbose,
         save_output=True,
-        constants=constants)   
+        constants=constants,
+        propeller_load_factor=args.propeller_load_factor)
     print(f"✓ Sweep panel power simulation complete: {output_dir}.sweep_panel_power")
 
 def run_voyage_simulation(args, circuit_setup, ngspice_available, output_dir, constants):
