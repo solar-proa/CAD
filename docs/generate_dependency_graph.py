@@ -39,7 +39,7 @@ def parse_makefile(makefile_path):
     # Find dependency rules for each artifact
     # Pattern: $(STAGE_ARTIFACT): dep1 dep2 dep3
     rule_pattern = re.compile(
-        r'^\$\(([A-Z][A-Z_]*)_ARTIFACT\)\s*:\s*(.+?)(?:\s*\||\s*$)',
+        r'^\$\(([A-Z][A-Z_]*)_ARTIFACT\)[^:]*:\s*(.+?)(?:\s*\||\s*$)',
         re.MULTILINE
     )
 
