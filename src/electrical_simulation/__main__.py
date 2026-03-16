@@ -12,6 +12,8 @@ Supports multiple simulation types:
 import argparse
 import json
 
+from .cable_sizing import parse_current_to_sizing
+
 from .circuit_constructor import build_circuit_from_json
 from .pyspice_simulator import begin_simulation
 from .result_saver import save_to_file
@@ -49,7 +51,7 @@ def main():
     parser.add_argument('--output', required=True,
                         help='Path to output artifact directory or file')
     parser.add_argument('--simulation-type', required=True,
-                        choices=['operating_point', 'sweep_throttle', 'sweep_panel_power', 'voyage', 'all'],
+                        choices=['operating_point', 'cable_sizing', 'sweep_throttle', 'sweep_panel_power', 'voyage', 'all'],
                         help='Type of simulation to run')
     parser.add_argument('--verbose', action='store_true',
                         help='Enable simulation logging')
@@ -74,6 +76,7 @@ def main():
 
     if args.simulation_type == 'all':
         run_operating_point_simulation(args, circuit_setup, ngspice_available, output_dir, constants)
+        #run_max_operating_point_simulation(args, circuit_setup, ngspice_available, output_dir, constants)
         run_sweep_throttle(args, circuit_setup, ngspice_available, output_dir, constants)
         run_sweep_panel_power(args, circuit_setup, ngspice_available, output_dir, constants)
         run_voyage_simulation(args, circuit_setup, ngspice_available, output_dir, constants)
@@ -81,6 +84,10 @@ def main():
     elif args.simulation_type == 'operating_point':
         run_operating_point_simulation(args, circuit_setup, ngspice_available, output_dir, constants)
 
+    elif args.simulation_type == 'cable_sizing':
+        result = run_max_operating_point_simulation(args, circuit_setup, ngspice_available, output_dir, constants)
+        parse_current_to_sizing(result)
+        
     elif args.simulation_type == 'sweep_throttle':
         run_sweep_throttle(args, circuit_setup, ngspice_available, output_dir, constants)
 
@@ -92,6 +99,20 @@ def main():
 
 def run_operating_point_simulation(args, circuit_setup, ngspice_available, output_dir, constants):
     modifications = {}
+    result = run_operating_point(args, circuit_setup, ngspice_available, output_dir, constants, modifications)
+
+    save_to_file(result, save_path=output_dir + ".operating_point.json", constants=constants)
+    print(f"✓ Operating point simulation complete: {output_dir}.operating_point.json")
+
+def run_max_operating_point_simulation(args, circuit_setup, ngspice_available, output_dir, constants):
+    modifications={'propeller_load_factor': 1.0, 'throttle_setting': 1.0, 'panel_power_setting': 1.0}
+    result = run_operating_point(args, circuit_setup, ngspice_available, output_dir, constants, modifications)
+
+    save_to_file(result, save_path=output_dir + ".max_operating_point.json", constants=constants)
+    print(f"✓ Maximum operating point simulation complete: {output_dir}.max_operating_point.json")
+    return result
+
+def run_operating_point(args, circuit_setup, ngspice_available, output_dir, constants, modifications = {}):
     if args.propeller_load_factor is not None:
         modifications['propeller_load_factor'] = args.propeller_load_factor
     circuit, component_object, errors = build_circuit_from_json(circuit_setup=circuit_setup, modifications=modifications, constants=constants)
@@ -103,10 +124,7 @@ def run_operating_point_simulation(args, circuit_setup, ngspice_available, outpu
         simulation_logging=args.verbose, show_errors=args.verbose,
         show_warnings=args.verbose,
         constants=constants)
-
-    save_to_file(result, save_path=output_dir + ".operating_point.json", constants=constants)
-    print(f"✓ Operating point simulation complete: {output_dir}.operating_point.json")
-
+    return result
 
 def run_sweep_throttle(args, circuit_setup, ngspice_available, output_dir, constants):
     sweep_throttle(

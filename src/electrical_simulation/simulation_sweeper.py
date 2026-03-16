@@ -27,8 +27,8 @@ def sweep_throttle(circuit_setup: json, save_path, ngspice_available,
         results.append(result)
     
     generate_graph(results, throttle_range, x_label="Throttle Input (%)",
-            voltage_display_choice=['mppt_result', 'load_result', 'battery_result'],
-            current_display_choice=['mppt_result', 'solar_result', 'load_result', 'battery_result'],
+            voltage_display_choice=['load_result', 'battery_result'],
+            current_display_choice=['solar_result', 'load_result', 'battery_result'],
             power_display_choice=['load_result'],
             save_path=save_path if save_output else None, constants=constants)
     

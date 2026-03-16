@@ -33,8 +33,14 @@ class Load_Array():
         POWER_SOURCE = battery_array.get_terminal()
         POWER_SOURCE_ID = battery_array.get_terminal_id()
         BATTERY_MAX_DISCHARGE_CURRENT = battery_array.get_discharge_limit()
+        
 
-        self.circuit.R(self.terminal_id, POWER_SOURCE, self.terminal, self.constants["WIRE_RESISTANCE"])
+        # 0V source = total current ammeter; read as I(Vl_array_sense)
+        # l_array_positive (the bus all loads connect to) is unchanged
+        self.circuit.R(self.terminal_id, POWER_SOURCE, "l_array_measured", self.constants["WIRE_RESISTANCE"])
+        
+        
+        self.circuit.V("l_array", "l_array_measured", self.terminal, 0)
 
         # Replace each load resistor with a behavioral current source that scales back
         # proportionally when total battery discharge current exceeds the limit
