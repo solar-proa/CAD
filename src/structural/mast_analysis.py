@@ -337,6 +337,18 @@ def validate_mast(params: Dict[str, Any],
     return {
         'test_name': 'mast_wind_loading',
         'description': f'Mast under {wind_speed_knots:.0f} knot wind (sail perpendicular)',
+        'standards_reference': {
+            'standard': 'ISO 12215-10',
+            'clause': '5.3',
+            'description': 'Mast structural validation under wind loading'
+        },
+        'assumptions': [
+            'Static wind loading assumed',
+            'Sail modeled as perpendicular flat plate',
+            'Mast modeled as fixed-pinned support system',
+            'Linear elastic material behavior assumed',
+            'Uniform aluminum material properties assumed'
+        ],
         'passed': all_passed,
         'min_safety_factor_required': min_safety_factor,
         'wind_speed_knots': wind_speed_knots,
