@@ -176,23 +176,35 @@ def combine_config_setup(circuit_config, component_config):
 
 def apply_boat_panel_config(circuit_config, boat_params):
     """Update panel in_series and in_parallel from boat parameters."""
-    if circuit_config.get("mppt_panel") is None:
-        return
+    print("Reading boat config file and circuit config file for panel arrangement...")
     
     panels_per_string = boat_params.get("panels_per_string")
     panels_longitudinal = boat_params.get("panels_longitudinal")
     panels_transversal = boat_params.get("panels_transversal")
-    
-    if panels_per_string is None or panels_longitudinal is None or panels_transversal is None:
-        return
-    
-    in_series = panels_per_string
-    in_parallel = panels_longitudinal // panels_transversal
-    
-    for config in circuit_config["mppt_panel"].values():
-        if "panel_info" in config:
-            config["panel_info"]["in_series"] = in_series
-            config["panel_info"]["in_parallel"] = in_parallel
+    boat_has_panel_config = panels_per_string is not None and panels_longitudinal is not None and panels_transversal is not None
+    if boat_has_panel_config:
+        in_series = panels_per_string
+        in_parallel = panels_longitudinal // panels_transversal
+        
+    mppt_panel = circuit_config.get("mppt_panel")
+    panels_per_string
+    for _, config in mppt_panel.items():
+        panel_info = config.get("panel_info", {})
+        if not panel_info.get("in_series") or not panel_info.get("in_parallel"):
+            print("Using boat panel config for mppt_panel config")
+            if len(mppt_panel) != 1:
+                print("Cannot use boat panel config if there are different config for panel arrangement")
+                return
+            else:
+                if panels_transversal != config.get('count'):
+                    print(f"Warning: panels_transversal from boat config ({panels_transversal}) does not match panel count in circuit config ({config.get('count')}). \nUsing panels_per_string {in_series} and panels_longitudinal / panels_transversal {in_parallel} for config_count {config.get('count')} number of panel arrays instead.")
+                panel_info["in_series"] = in_series
+                panel_info["in_parallel"] = in_parallel
+                break
+        else:
+            print("Panel arrangement already specified in circuit config, not using boat panel config.")
+            if panel_info.get("in_series") != in_series or panel_info.get("in_parallel") != in_parallel:
+                print(f"Warning: Boat panel config does not match circuit config for {__file__}. Boat config (in_series={in_series}, in_parallel={in_parallel}) vs circuit config (in_series={panel_info.get('in_series')}, in_parallel={panel_info.get('in_parallel')}). \nUsing circuit config values.")
      
 if __name__ == "__main__":
     main()
